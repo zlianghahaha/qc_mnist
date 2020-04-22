@@ -38,7 +38,7 @@ num_workers = 0
 # how many samples per batch to load
 batch_size = 32
 inference_batch_size = 32
-num_f1 = 128
+num_f1 = 64
 # num_f2 = len(interest_num)
 num_f2 = 32
 num_f3 = len(interest_num)
@@ -671,13 +671,15 @@ if training:
             acc = cur_acc
 
         print("Best accuracy: {}; Current accuracy {}. Checkpointing".format(acc, cur_acc))
-        save_checkpoint({
-            'epoch': epoch + 1,
-            'acc': acc,
-            'state_dict': model.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'scheduler': scheduler.state_dict(),
-        }, is_best, save_path, 'checkpoint_{}_{}.pth.tar'.format(epoch, round(cur_acc, 4)))
+
+        if save_chkp:
+            save_checkpoint({
+                'epoch': epoch + 1,
+                'acc': acc,
+                'state_dict': model.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'scheduler': scheduler.state_dict(),
+            }, is_best, save_path, 'checkpoint_{}_{}.pth.tar'.format(epoch, round(cur_acc, 4)))
         print("Epoch End at:", time.strftime("%m/%d/%Y %H:%M:%S"))
         print("=" * 60)
         print()
