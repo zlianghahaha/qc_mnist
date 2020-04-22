@@ -1,0 +1,7 @@
+/**/__pycache__/*.pyc
+/**/*.pth
+/**/*.res
+/**/*.xml
+/.idea/
+/**/data/*
+/**/model/*
