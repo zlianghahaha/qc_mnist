@@ -5,7 +5,7 @@ import sys
 sys.path.append("../qiskit")
 sys.path.append("../pytorch")
 from qiskit_library import *
-# from mnist import *
+from mnist import *
 import numpy as np
 from random import randrange
 import qiskit as qk
@@ -56,8 +56,8 @@ def do_slp_via_th(input_ori, w_ori):
 def simulate_one_step(I, W, test_L1):
     if test_L1:
         W1 = W
-        IFM = I
-        input = torch.tensor(IFM[0]) * 2 - 1
+        IFM = I.clone().detach()
+        input = IFM[0] * 2 - 1
 
         q_in = qk.QuantumRegister(16, "io")
         q_enc = qk.QuantumRegister(4, "encoder")
@@ -89,7 +89,7 @@ def simulate_one_step(I, W, test_L1):
     else:
         W2 = W
         OFM1_QC = I
-        input = torch.tensor(OFM1_QC[0]) * 2 - 1
+        input = OFM1_QC[0] * 2 - 1
 
         q_in = qk.QuantumRegister(4, "io")
         q_enc = qk.QuantumRegister(2, "encoder")
@@ -125,8 +125,8 @@ def simulate_one_step(I, W, test_L1):
     qc_shots = 1000
     num_c_reg = 1
 
-    print("=" * 50)
-    print("Start simulation:")
+    # print("=" * 50)
+    # print("Start simulation:")
     start = time.time()
     iters = 1
     counts = simulate(circuit, qc_shots, iters, False)
@@ -134,8 +134,8 @@ def simulate_one_step(I, W, test_L1):
     end = time.time()
     qc_time = end - start
 
-    print("From QC:", counts)
-    print("Simulation elasped time:", qc_time)
+    # print("From QC:", counts)
+    # print("Simulation elasped time:", qc_time)
 
     def analyze(counts):
         mycount = {}
@@ -158,6 +158,53 @@ def simulate_one_step(I, W, test_L1):
     # for b in range(bits):
     #     print(b, float(mycount[b]) / qc_shots)
     return float(mycount[0]) / qc_shots
+
+
+
+def run_simulator(model,IFM):
+    OFM = {}
+    input_data = IFM.view(1,-1, )
+    layer_idx = 0
+    for layer_name, layer in model.named_modules():
+        if isinstance(layer, BinaryLinear):
+            W = (binarize(model.state_dict()[layer_name+".weight"]))
+            OFM_QC = torch.zeros((1,layer.out_features))
+
+            idx = 0
+            for w in W:
+                w = w.unsqueeze(0)
+                # print("\t\tInputs:",input_data)
+                # print("\t\tWeights:", w)
+                OFM_QC[0][idx] = simulate_one_step(input_data, w, layer_idx==0)
+                # print("\t\tResults:",OFM_QC[0][idx])
+                idx += 1
+
+
+
+            if layer.out_features == 1:
+                OFM_QC = torch.cat((OFM_QC, 1 - OFM_QC), -1)
+
+            # print("="*100)
+            # print(layer,OFM_QC)
+
+            OFM[layer_name] = OFM_QC
+            input_data = OFM_QC
+            layer_idx += 1
+
+    # print(OFM["fc2"])
+    return OFM["fc2"]
+    #
+    # idx = 0
+    # for w in W1:
+    #     w = w.unsqueeze(0)
+    #     OFM1_QC[0][idx] = simulate_one_step(IFM, w, True)
+    #     idx += 1
+    #
+    # idx = 0
+    # for w in W2:
+    #     w = w.unsqueeze(0)
+    #     OFM2_QC[0][idx] = simulate_one_step(OFM1_QC, w, False)
+    #     idx += 1
 
 
 if __name__ == "__main__":
@@ -189,7 +236,11 @@ if __name__ == "__main__":
     idx = 0
     for w in W1:
         w = w.unsqueeze(0)
+
+        print("\t\tInputs:", IFM)
+        print("\t\tWeights:", w)
         OFM1_QC[0][idx] = simulate_one_step(IFM, w, True)
+        print("\t\tResults:", OFM1_QC[0][idx])
         idx += 1
 
     idx = 0

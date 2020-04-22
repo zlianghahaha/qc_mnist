@@ -312,7 +312,7 @@ def print_status(vector, name="status_vector"):
 def generateU(circuit, matrix, q, aux):
 
     maxIndex = len(matrix)
-    print(maxIndex)
+    # print(maxIndex)
     goalVector = generateStates(maxIndex)
     goalVector = markStates(goalVector, matrix)
     # print_status(goalVector,"goal_vector")
@@ -534,7 +534,7 @@ def simulate(circuit, shots, iter, printable=True):
     for it in range(iter):
         backend = Aer.get_backend('qasm_simulator')
         job_sim = execute(circuit, backend, shots=shots)
-        job_monitor(job_sim)
+        # job_monitor(job_sim)
         result_sim = job_sim.result()
         counts = result_sim.get_counts()
         count_set.append(counts)
