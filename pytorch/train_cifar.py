@@ -36,8 +36,8 @@ img_size = 16
 # number of subprocesses to use for data loading
 num_workers = 0
 # how many samples per batch to load
-batch_size = 32
-inference_batch_size = 32
+batch_size = 64
+inference_batch_size = 64
 num_f1 = 64
 # num_f2 = len(interest_num)
 num_f2 = 32
