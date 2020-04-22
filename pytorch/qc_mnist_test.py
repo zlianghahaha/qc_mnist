@@ -538,13 +538,13 @@ def test_qc_sim():
 
 
     accur.append(100. * correct / num_test)
-    accur_qc.append(100. * correct_qc / num_test)
     test_loss /= num_test
-    test_loss_qc /= num_test
     print('Theoretic Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)'.format(
         test_loss, correct, num_test,
         100. * float(correct) / float(num_test)))
 
+    accur_qc.append(100. * correct_qc / num_test)
+    test_loss_qc /= num_test
     print('Quantum Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)'.format(
         test_loss_qc, correct_qc, num_test,
         100. * float(correct_qc) / float(num_test)))
