@@ -56,8 +56,10 @@ given_ang = -1
 save_to_file = False
 if save_to_file:
     sys.stdout = open(save_path + "/log", 'w')
-save_path = "./model/" + os.path.basename(sys.argv[0]) + "_" + time.strftime("%Y_%m_%d-%H_%M_%S")
-Path(save_path).mkdir(parents=True, exist_ok=True)
+
+if save_chkp:
+    save_path = "./model/" + os.path.basename(sys.argv[0]) + "_" + time.strftime("%Y_%m_%d-%H_%M_%S")
+    Path(save_path).mkdir(parents=True, exist_ok=True)
 
 resume_path = "./model/ipykernel_launcher.py_2020_04_22-15_15_31/model_best.tar"
 
