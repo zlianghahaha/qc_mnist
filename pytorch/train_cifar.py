@@ -38,13 +38,13 @@ num_workers = 0
 # how many samples per batch to load
 batch_size = 64
 inference_batch_size = 64
-num_f1 = 128
+num_f1 = 64
 # num_f2 = len(interest_num)
 num_f2 = 32
 num_f3 = len(interest_num)
 init_lr = 0.1
 init_qc_lr = 1
-with_norm = False
+with_norm = True
 save_chkp = False
 # Given_ang to -1 to train the variable
 given_ang = -1
@@ -295,11 +295,11 @@ class BinaryLinear(nn.Linear):
 
 
 class QC_Norm(nn.Module):
-    def __init__(self, num_features, momentum=0.1):
+    def __init__(self, num_features, init_ang_inc=10, momentum=0.1):
         super(QC_Norm, self).__init__()
 
         self.x_running_rot = Parameter(torch.zeros(num_features), requires_grad=False)
-        self.ang_inc = Parameter(torch.ones(1) * 10)
+        self.ang_inc = Parameter(torch.ones(1) * init_ang_inc)
 
         self.momentum = momentum
 
@@ -334,7 +334,11 @@ class QC_Norm(nn.Module):
 
             ang_inc = self.ang_inc.unsqueeze(-1).expand(x_mean_ancle.shape)
             # ang_inc = np.pi/2/(x.max(-1)[0].unsqueeze(-1).expand(x_mean_ancle.shape) -x.min(-1)[0].unsqueeze(-1).expand(x_mean_ancle.shape) )
-            x_mean_rote = (np.pi / 2 - x_mean_ancle) * 20  # ang_inc
+
+            if given_ang != -1:
+                x_mean_rote = (np.pi / 2 - x_mean_ancle) * given_ang
+            else:
+                x_mean_rote = (np.pi / 2 - x_mean_ancle) * ang_inc
 
             x_moving_rot = (x_mean_rote.sum(-1) / x.shape[-1])
             self.x_running_rot[:] = self.momentum * self.x_running_rot + \
@@ -467,29 +471,29 @@ class QC_Norm_Correction(nn.Module):
 
 # %%
 
-
 ## Define the NN architecture
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
 
-        self.fc1 = BinaryLinear(3 * img_size * img_size, num_f1, bias=False)
+        self.fc1 = BinaryLinear(3*img_size * img_size, num_f1, bias=False)
         self.fc2 = BinaryLinear(num_f1, num_f2, bias=False)
-        self.fc3 = BinaryLinear(num_f2, num_f3, bias=False)
+        self.fc3 = BinaryLinear(num_f2,num_f3,bias=False)
         # #
-        # self.qc1 = QC_Norm(num_features=num_f1)
-        # self.qc2 = QC_Norm(num_features=num_f2)
-        # self.qc3 = QC_Norm(num_features=num_f3)
+
+        if with_norm:
+            self.qc1 = QC_Norm(num_features=num_f1, init_ang_inc=10)
+            self.qc2 = QC_Norm(num_features=num_f2, init_ang_inc=40)
+            self.qc3 = QC_Norm(num_features=num_f3, init_ang_inc=40)
+
+            self.qc1a = QC_Norm_Correction(num_features=num_f1)
+            self.qc2a = QC_Norm_Correction(num_features=num_f2)
+            self.qc3a = QC_Norm_Correction(num_features=num_f3)
+
         #
-        # self.qc1a = QC_Norm_Correction(num_features=num_f1)
-        # self.qc2a = QC_Norm_Correction(num_features=num_f2)
-        # self.qc3a = QC_Norm_Correction(num_features=num_f3)
-        # #
-        # #
         # self.qc1 = QC_Norm_Real(num_features=num_f1)
         # self.qc2 = QC_Norm_Real(num_features=num_f2)
         # self.qc3 = QC_Norm_Real(num_features=num_f3)
-        #
 
         # self.qc1a = QC_Norm_Real_Correction(num_features=num_f1)
         # self.qc2a = QC_Norm_Real_Correction(num_features=num_f2)
@@ -504,15 +508,16 @@ class Net(nn.Module):
             # x = (x+1)/2
             #
 
-            x = self.fc1(x)
-            x = self.fc2(x)
-            x = self.fc3(x)
+            if with_norm:
+                x = self.qc1(self.qc1a(self.fc1(x)))
+                x = self.qc2(self.qc2a(self.fc2(x)))
+                x = self.qc3(self.qc3a(self.fc3(x)))
+            else:
+                x = self.fc1(x)
+                x = self.fc2(x)
+                x = self.fc3(x)
 
-            #
 
-            # x = self.qc1(self.qc1a(self.fc1(x)))
-            # x = self.qc2(self.qc2a(self.fc2(x)))
-            # x = self.qc3(self.qc3a(self.fc3(x)))
             #
             # x = self.qc1((self.fc1(x)))
             # x = self.qc2((self.fc2(x)))
@@ -523,32 +528,48 @@ class Net(nn.Module):
             # x = binarize(x-0.0001)
             # x = (x+1)/2
 
+            print("=" * 10, "layer 1", "=" * 10)
+            print(x)
             torch.set_printoptions(profile="full")
-
             print(binarize(self.fc1.weight))
-
-            y = x[0] * binarize(self.fc1.weight[0])
-            print(y.sum() / y.shape[0])
             torch.set_printoptions(profile="default")
             x = self.fc1(x)
+
+            print("=" * 10, "layer 2", "=" * 10)
             print(x)
+            torch.set_printoptions(profile="full")
+            print(binarize(self.fc2.weight))
+            torch.set_printoptions(profile="default")
+            x = self.fc2(x)
+
+            print("=" * 10, "results", "=" * 10)
+            print(x)
+
+
         else:
+
             # x = self.qc1(self.fc1(x),training=False)
-            # x = self.qc2(self.fc2(x),training=False)
+            #     x = self.qc2(self.fc2(x),training=False)
             # x = self.qc3(self.fc3(x),training=False)
             #
 
             # x = binarize(x-0.0001)
             # x = (x+1)/2
             #
-            # x = self.qc1(self.qc1a(self.fc1(x),training=False),training=False)
-            # x = self.qc2(self.qc2a(self.fc2(x),training=False),training=False)
-            # x = self.qc3(self.qc3a(self.fc3(x),training=False),training=False)
             #
-            #
-            x = self.fc1(x)
-            x = self.fc2(x)
-            x = self.fc3(x)
+
+            if with_norm:
+                x = self.qc1(self.qc1a(self.fc1(x), training=False), training=False)
+                x = self.qc2(self.qc2a(self.fc2(x), training=False), training=False)
+                x = self.qc3(self.qc3a(self.fc3(x), training=False), training=False)
+            else:
+                x = self.fc1(x)
+                x = self.fc2(x)
+                x = self.fc3(x)
+
+        if num_f2 == 1:
+            x = torch.cat((x, 1 - x), -1)
+
         return x
 
 
@@ -586,7 +607,20 @@ model = Net().to(device)
 print("=" * 10, "Model Info", "=" * 10)
 print(model)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=init_lr)
+
+
+if with_norm and given_ang==-1:
+    optimizer = torch.optim.Adam([
+                    {'params': model.fc1.parameters()},
+                    {'params': model.fc2.parameters()},
+                    {'params': model.fc3.parameters()},
+                    {'params': model.qc1.parameters(), 'lr': init_qc_lr},
+                    {'params': model.qc2.parameters(), 'lr': init_qc_lr},
+                    {'params': model.qc3.parameters(), 'lr': init_qc_lr},
+                ], lr=init_lr)
+else:
+    optimizer = torch.optim.Adam(model.parameters(), lr=init_lr)
+
 
 milestones = [3, 5, 8]
 scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones, gamma=0.1)
