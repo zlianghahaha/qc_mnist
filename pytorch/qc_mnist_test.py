@@ -465,8 +465,8 @@ def test():
 
 # Training
 
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = Net().to(device)
 print("=" * 10, "Model Info", "=" * 10)
 print(model)
