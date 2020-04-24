@@ -107,7 +107,7 @@ def modify_target(target):
 
 def select_num(dataset, interest_num):
     labels = dataset.targets  # get labels
-    labels = labels.numpy()
+    # labels = labels.numpy()
     idx = {}
     for num in interest_num:
         idx[num] = np.where(labels == num)
