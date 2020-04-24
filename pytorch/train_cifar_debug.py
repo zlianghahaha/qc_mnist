@@ -47,7 +47,7 @@ init_qc_lr = 1
 with_norm = True
 save_chkp = False
 # Given_ang to -1 to train the variable
-given_ang = 10
+given_ang = -1
 
 save_to_file = False
 if save_to_file:
@@ -491,9 +491,9 @@ class Net(nn.Module):
             # x = (x+1)/2
             #
 
-            x = self.fc1(x)
-            x = self.fc2(x)
-            x = self.fc3(x)
+            # x = self.fc1(x)
+            # x = self.fc2(x)
+            # x = self.fc3(x)
 
             #
 
@@ -501,9 +501,9 @@ class Net(nn.Module):
             # x = self.qc2(self.qc2a(self.fc2(x)))
             # x = self.qc3(self.qc3a(self.fc3(x)))
             #
-            # x = self.qc1((self.fc1(x)))
-            # x = self.qc2((self.fc2(x)))
-            # x = self.qc3((self.fc3(x)))
+            x = self.qc1((self.fc1(x)))
+            x = self.qc2((self.fc2(x)))
+            x = self.qc3((self.fc3(x)))
             #
         elif training == 2:
 
@@ -520,9 +520,9 @@ class Net(nn.Module):
             x = self.fc1(x)
             print(x)
         else:
-            # x = self.qc1(self.fc1(x),training=False)
-            # x = self.qc2(self.fc2(x),training=False)
-            # x = self.qc3(self.fc3(x),training=False)
+            x = self.qc1(self.fc1(x),training=False)
+            x = self.qc2(self.fc2(x),training=False)
+            x = self.qc3(self.fc3(x),training=False)
             #
 
             # x = binarize(x-0.0001)
@@ -533,9 +533,9 @@ class Net(nn.Module):
             # x = self.qc3(self.qc3a(self.fc3(x),training=False),training=False)
             #
             #
-            x = self.fc1(x)
-            x = self.fc2(x)
-            x = self.fc3(x)
+            # x = self.fc1(x)
+            # x = self.fc2(x)
+            # x = self.fc3(x)
         return x
 
 
