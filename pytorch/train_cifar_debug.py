@@ -635,8 +635,7 @@ def train(epoch):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data, True)
-        print(output)
-        sys.exit(0)
+
         pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
 
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
