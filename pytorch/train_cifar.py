@@ -78,29 +78,36 @@ print()
 
 # %%
 
-def modify_target(target):
+def modify_target_ori(target):
     for j in range(len(target)):
         for idx in range(len(interest_num)):
             if target[j] == interest_num[idx]:
                 target[j] = idx
                 break
 
-    new_target = torch.zeros(target.shape[0], 2)
+    new_target = torch.zeros(target.shape[0], len(interest_num))
 
     for i in range(target.shape[0]):
-        if target[i].item() == 0:
-            new_target[i] = torch.tensor([1, 0]).clone()
-        else:
-            new_target[i] = torch.tensor([0, 1]).clone()
+        one_shot = torch.zeros(len(interest_num))
+        one_shot[target[i].item()] = 1
+        new_target[i] = one_shot.clone()
 
+    return target, new_target
+
+
+def modify_target(target):
+    new_target = torch.zeros(target.shape[0], len(interest_num))
+
+    for i in range(target.shape[0]):
+        one_shot = torch.zeros(len(interest_num))
+        one_shot[target[i].item()] = 1
+        new_target[i] = one_shot.clone()
     return target, new_target
 
 
 def select_num(dataset, interest_num):
     labels = dataset.targets  # get labels
-    # labels = labels.numpy()
-    labels = np.asarray(labels)
-
+    labels = labels.numpy()
     idx = {}
     for num in interest_num:
         idx[num] = np.where(labels == num)
@@ -116,11 +123,10 @@ def select_num(dataset, interest_num):
 
     # print(dataset.targets.shape)
 
-    dataset.targets, _ = modify_target(dataset.targets)
+    dataset.targets, _ = modify_target_ori(dataset.targets)
     # print(dataset.targets.shape)
 
     return dataset
-
 
 print('==> Preparing data..')
 
