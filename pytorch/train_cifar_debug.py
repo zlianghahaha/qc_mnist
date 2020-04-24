@@ -464,9 +464,9 @@ class Net(nn.Module):
         self.fc2 = BinaryLinear(num_f1, num_f2, bias=False)
         self.fc3 = BinaryLinear(num_f2, num_f3, bias=False)
         # #
-        self.qc1 = QC_Norm(num_features=num_f1)
-        self.qc2 = QC_Norm(num_features=num_f2)
-        self.qc3 = QC_Norm(num_features=num_f3)
+        # self.qc1 = QC_Norm(num_features=num_f1)
+        # self.qc2 = QC_Norm(num_features=num_f2)
+        # self.qc3 = QC_Norm(num_features=num_f3)
         #
         # self.qc1a = QC_Norm_Correction(num_features=num_f1)
         # self.qc2a = QC_Norm_Correction(num_features=num_f2)
@@ -491,9 +491,9 @@ class Net(nn.Module):
             # x = (x+1)/2
             #
 
-            # x = self.fc1(x)
-            # x = self.fc2(x)
-            # x = self.fc3(x)
+            x = self.fc1(x)
+            x = self.fc2(x)
+            x = self.fc3(x)
 
             #
 
@@ -501,9 +501,9 @@ class Net(nn.Module):
             # x = self.qc2(self.qc2a(self.fc2(x)))
             # x = self.qc3(self.qc3a(self.fc3(x)))
             #
-            x = self.qc1((self.fc1(x)))
-            x = self.qc2((self.fc2(x)))
-            x = self.qc3((self.fc3(x)))
+            # x = self.qc1((self.fc1(x)))
+            # x = self.qc2((self.fc2(x)))
+            # x = self.qc3((self.fc3(x)))
             #
         elif training == 2:
 
@@ -520,9 +520,9 @@ class Net(nn.Module):
             x = self.fc1(x)
             print(x)
         else:
-            x = self.qc1(self.fc1(x),training=False)
-            x = self.qc2(self.fc2(x),training=False)
-            x = self.qc3(self.fc3(x),training=False)
+            # x = self.qc1(self.fc1(x),training=False)
+            # x = self.qc2(self.fc2(x),training=False)
+            # x = self.qc3(self.fc3(x),training=False)
             #
 
             # x = binarize(x-0.0001)
@@ -533,9 +533,9 @@ class Net(nn.Module):
             # x = self.qc3(self.qc3a(self.fc3(x),training=False),training=False)
             #
             #
-            # x = self.fc1(x)
-            # x = self.fc2(x)
-            # x = self.fc3(x)
+            x = self.fc1(x)
+            x = self.fc2(x)
+            x = self.fc3(x)
         return x
 
 
