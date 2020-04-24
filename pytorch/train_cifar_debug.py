@@ -464,9 +464,9 @@ class Net(nn.Module):
         self.fc2 = BinaryLinear(num_f1, num_f2, bias=False)
         self.fc3 = BinaryLinear(num_f2, num_f3, bias=False)
         # #
-        # self.qc1 = QC_Norm(num_features=num_f1)
-        # self.qc2 = QC_Norm(num_features=num_f2)
-        # self.qc3 = QC_Norm(num_features=num_f3)
+        self.qc1 = QC_Norm(num_features=num_f1)
+        self.qc2 = QC_Norm(num_features=num_f2)
+        self.qc3 = QC_Norm(num_features=num_f3)
         #
         # self.qc1a = QC_Norm_Correction(num_features=num_f1)
         # self.qc2a = QC_Norm_Correction(num_features=num_f2)
