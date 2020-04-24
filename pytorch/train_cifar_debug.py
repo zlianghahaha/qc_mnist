@@ -36,15 +36,15 @@ img_size = 16
 # number of subprocesses to use for data loading
 num_workers = 0
 # how many samples per batch to load
-batch_size = 32
-inference_batch_size = 32
-num_f1 = 64
+batch_size = 64
+inference_batch_size = 64
+num_f1 = 128
 # num_f2 = len(interest_num)
 num_f2 = 32
 num_f3 = len(interest_num)
 init_lr = 0.1
 init_qc_lr = 1
-with_norm = True
+with_norm = False
 save_chkp = False
 # Given_ang to -1 to train the variable
 given_ang = -1
