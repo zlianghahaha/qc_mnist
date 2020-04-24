@@ -44,10 +44,10 @@ num_f2 = 32
 num_f3 = len(interest_num)
 init_lr = 0.1
 init_qc_lr = 1
-with_norm = False
+with_norm = True
 save_chkp = False
 # Given_ang to -1 to train the variable
-given_ang = -1
+given_ang = 10
 
 save_to_file = False
 if save_to_file:
