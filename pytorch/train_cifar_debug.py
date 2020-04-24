@@ -31,14 +31,14 @@ print = functools.partial(print, flush=True)
 # For 4*4, 16->4->1: batch_size=16; init_lr=0.1; with_norm=True, ang:20; or train
 
 # interest_num = [0,1,2,3,4,5,6,7,8,9]
-interest_num = [1, 2, 7]
+interest_num = [1, 7]
 img_size = 16
 # number of subprocesses to use for data loading
 num_workers = 0
 # how many samples per batch to load
 batch_size = 32
 inference_batch_size = 32
-num_f1 = 128
+num_f1 = 64
 # num_f2 = len(interest_num)
 num_f2 = 32
 num_f3 = len(interest_num)
