@@ -1,23 +1,71 @@
-from torch.nn.parameter import Parameter
 import torch
-import numpy as np
-import torchvision
-from torchvision import datasets
-import torchvision.transforms as transforms
-from torchsummary import summary
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Function
 import numpy as np
 import math
-
 import shutil
 import os
-import time
 import sys
-from pathlib import Path
-import functools
-from collections import Counter
+
+
+def modify_target_ori(target,interest_num):
+    for j in range(len(target)):
+        for idx in range(len(interest_num)):
+            if target[j] == interest_num[idx]:
+                target[j] = idx
+                break
+
+    new_target = torch.zeros(target.shape[0], len(interest_num))
+
+    for i in range(target.shape[0]):
+        one_shot = torch.zeros(len(interest_num))
+        one_shot[target[i].item()] = 1
+        new_target[i] = one_shot.clone()
+
+    return target, new_target
+
+
+def modify_target(target,interest_num):
+    new_target = torch.zeros(target.shape[0], len(interest_num))
+
+    for i in range(target.shape[0]):
+        one_shot = torch.zeros(len(interest_num))
+        one_shot[target[i].item()] = 1
+        new_target[i] = one_shot.clone()
+    return target, new_target
+
+
+def select_num(dataset, interest_num):
+    labels = dataset.targets  # get labels
+    labels = labels.numpy()
+    idx = {}
+    for num in interest_num:
+        idx[num] = np.where(labels == num)
+
+    fin_idx = idx[interest_num[0]]
+    for i in range(1, len(interest_num)):
+        fin_idx = (np.concatenate((fin_idx[0], idx[interest_num[i]][0])),)
+
+    fin_idx = fin_idx[0]
+
+    dataset.targets = labels[fin_idx]
+    dataset.data = dataset.data[fin_idx]
+
+    # print(dataset.targets.shape)
+
+    dataset.targets, _ = modify_target_ori(dataset.targets, interest_num)
+    # print(dataset.targets.shape)
+
+    return dataset
+
+
+def save_checkpoint(state, is_best, save_path, filename):
+    filename = os.path.join(save_path, filename)
+    torch.save(state, filename)
+    if is_best:
+        bestname = os.path.join(save_path, 'model_best.tar')
+        shutil.copyfile(filename, bestname)
 
 
 class BinarizeF(Function):
@@ -112,6 +160,34 @@ class BinaryLinear(nn.Linear):
             binary_bias = binarize(self.bias) / float(len(input[0].flatten()) + 1)
             res = F.linear(input, binary_weight / float(len(input[0].flatten()) + 1), binary_bias)
             return res
+
+    def reset_parameters(self):
+        # Glorot initialization
+        in_features, out_features = self.weight.size()
+        stdv = math.sqrt(1.5 / (in_features + out_features))
+        self.weight.data.uniform_(-stdv, stdv)
+        if self.bias is not None:
+            self.bias.data.zero_()
+
+        self.weight.lr_scale = 1. / stdv
+
+
+
+
+
+class BinaryLinearClassic(nn.Linear):
+
+    def forward(self, input):
+        binary_weight = binarize(self.weight)
+        if self.bias is None:
+            output = F.linear(input, binary_weight)
+            output = torch.div(output, input.shape[-1])
+            # output = torch.pow(output, 2)
+
+            return output
+        else:
+            print("Not Implement")
+            sys.exit(0)
 
     def reset_parameters(self):
         # Glorot initialization

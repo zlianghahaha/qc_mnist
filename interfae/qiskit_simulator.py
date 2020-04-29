@@ -5,7 +5,7 @@ import sys
 sys.path.append("../qiskit")
 sys.path.append("../pytorch")
 from qiskit_library import *
-from mnist import *
+from lib_util import *
 import numpy as np
 from random import randrange
 import qiskit as qk
