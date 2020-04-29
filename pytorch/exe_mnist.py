@@ -172,6 +172,7 @@ if __name__ == "__main__":
         save_path = "./model/" + os.path.basename(sys.argv[0]) + "_" + time.strftime("%Y_%m_%d-%H_%M_%S")
         Path(save_path).mkdir(parents=True, exist_ok=True)
 
+        logger.info("Checkpoint path: {}".format(save_path))
 
     if save_chkp:
         fh = open(save_path+"/config","w")
