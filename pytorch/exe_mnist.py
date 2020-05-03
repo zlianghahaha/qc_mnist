@@ -123,7 +123,7 @@ def parse_args():
     parser.add_argument('-wn', "--with_norm", help="Using Batchnorm", action="store_true", )
 
     parser.add_argument('-ql','--init_qc_lr', default="0.1", help="QC Batchnorm learning rate", )
-    parser.add_argument('-qa',"--given_ang", default="40, 10",  help="ang amplify, the same size with --neural_in_layers",)
+    parser.add_argument('-qa',"--given_ang", default="1 -1 1 -1, -1 -1",  help="ang amplify, the same size with --neural_in_layers",)
     parser.add_argument('-qt',"--train_ang", help="train anglee", action="store_true", )
 
     # File
@@ -164,7 +164,12 @@ if __name__ == "__main__":
     classic = args.classic
     init_qc_lr = float(args.init_qc_lr)
     with_norm = args.with_norm
-    given_ang = [int(x.strip()) for x in args.given_ang.split(",")]
+
+
+
+    given_ang = [[int(y) for y in x.strip().split(" ")] for x in args.given_ang.split(",")]
+
+
     train_ang = args.train_ang
 
     save_chkp = args.save_chkp
