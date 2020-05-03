@@ -195,7 +195,7 @@ class QC_Norm_try3(nn.Module):
 
         self.x_running_rot = Parameter(torch.zeros((num_features)), requires_grad=False)
         # self.ang_inc = Parameter(torch.ones(1)*init_ang_inc)
-        self.ang_inc = Parameter(torch.ones((num_features))*init_ang_inc, requires_grad=training)
+        self.ang_inc = Parameter(torch.tensor(init_ang_inc,dtype=torch.float32),requires_grad=True)
         self.momentum = momentum
 
         self.printed = False
