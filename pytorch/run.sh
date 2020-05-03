@@ -186,11 +186,11 @@ sleep 1
 CUDA_VISIBLE_DEVICES=0 python exe_mnist.py -wn -qt -c "3, 6" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt3_36.res 2>&1 &
 sleep 1
 
-CUDA_VISIBLE_DEVICES=0 python exe_mnist.py -wn -qt -c "3, 8" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt1_38.res 2>&1 &
+CUDA_VISIBLE_DEVICES=1 python exe_mnist.py -wn -qt -c "3, 8" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt1_38.res 2>&1 &
 sleep 1
-CUDA_VISIBLE_DEVICES=0 python exe_mnist.py -wn -qt -c "3, 8" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt2_38.res 2>&1 &
+CUDA_VISIBLE_DEVICES=1 python exe_mnist.py -wn -qt -c "3, 8" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt2_38.res 2>&1 &
 sleep 1
-CUDA_VISIBLE_DEVICES=0 python exe_mnist.py -wn -qt -c "3, 8" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt3_38.res 2>&1 &
+CUDA_VISIBLE_DEVICES=1 python exe_mnist.py -wn -qt -c "3, 8" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt3_38.res 2>&1 &
 sleep 1
 
 wait
@@ -202,11 +202,11 @@ sleep 1
 CUDA_VISIBLE_DEVICES=0 python exe_mnist.py -tb 16 -nn "8, 3" -wn -qt -c "1, 3, 6" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt3_136.res 2>&1 &
 sleep 1
 
-CUDA_VISIBLE_DEVICES=0 python exe_mnist.py -s 8 -tb 16 -nn "8, 3" -wn -qt -c "1, 3, 6" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt1_136_s8.res 2>&1 &
+CUDA_VISIBLE_DEVICES=1 python exe_mnist.py -s 8 -tb 16 -nn "8, 3" -wn -qt -c "1, 3, 6" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt1_136_s8.res 2>&1 &
 sleep 1
-CUDA_VISIBLE_DEVICES=0 python exe_mnist.py -s 8 -tb 16 -nn "8, 3" -wn -qt -c "1, 3, 6" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt2_136_s8.res 2>&1 &
+CUDA_VISIBLE_DEVICES=1 python exe_mnist.py -s 8 -tb 16 -nn "8, 3" -wn -qt -c "1, 3, 6" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt2_136_s8.res 2>&1 &
 sleep 1
-CUDA_VISIBLE_DEVICES=0 python exe_mnist.py -s 8 -tb 16 -nn "8, 3" -wn -qt -c "1, 3, 6" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt3_136_s8.res 2>&1 &
+CUDA_VISIBLE_DEVICES=1 python exe_mnist.py -s 8 -tb 16 -nn "8, 3" -wn -qt -c "1, 3, 6" -s 4 -l 0.1 -e 30 -m "10, 20" -chk > log/real_wnqt3_136_s8.res 2>&1 &
 sleep 1
 
 wait
