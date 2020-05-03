@@ -369,6 +369,15 @@ def generateU(circuit, matrix, q, aux):
     # circuit.barrier()
 
 
+def encoder2_1(circuit, q, o):
+    circuit.cx(q[0], q[1])
+    circuit.h(o)
+
+    circuit.cz(q[1], o)
+
+    circuit.barrier()
+    return o
+
 def encoder4_2(circuit, q, aux):
     for i in range(1, 4):
         circuit.cx(q[0], q[i])
@@ -583,6 +592,18 @@ def reset_qbits(circuit, q_set):
         circuit.reset(q)
     circuit.barrier()
 
+
+
+def SLP_2_encoding(circuit, q_in, q_en, input=[]):
+    if len(input) != 0:
+        init(circuit, input, q_in)
+    encoder2_1(circuit, q_in, q_en)
+
+def SLP_2_Uw(circuit, q_en, w, aux=[]):
+    beg = len(circuit.data)
+    generateU(circuit, w, q_en, aux)
+    end = len(circuit.data)
+    return beg, end
 
 def SLP_4_encoding(circuit, q_in, q_en, input=[], aux=[]):
     if len(input) != 0:

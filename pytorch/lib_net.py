@@ -30,8 +30,8 @@ class Net(nn.Module):
             for idx in range(self.layer):
                 qc_name = "qc"+str(idx)
                 qca_name = "qca"+str(idx)
-                setattr(self, qc_name, QC_Norm(num_features=layers[idx], init_ang_inc=given_ang[idx], training=train_ang))
-                setattr(self, qca_name, QC_Norm_Correction(num_features=layers[idx]))
+                setattr(self, qc_name, QC_Norm_try3(num_features=layers[idx], init_ang_inc=given_ang[idx], training=train_ang))
+                setattr(self, qca_name, QC_Norm_Correction_try2(num_features=layers[idx]))
             for idx in range(self.layer):
                 bn_name = "bn"+str(idx)
                 setattr(self, bn_name,nn.BatchNorm1d(num_features=layers[idx]))

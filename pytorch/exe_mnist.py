@@ -122,7 +122,7 @@ def parse_args():
     parser.add_argument('-nq', "--classic", help="classic computing test", action="store_true", )
     parser.add_argument('-wn', "--with_norm", help="Using Batchnorm", action="store_true", )
 
-    parser.add_argument('-ql','--init_qc_lr', default="1", help="QC Batchnorm learning rate", )
+    parser.add_argument('-ql','--init_qc_lr', default="0.1", help="QC Batchnorm learning rate", )
     parser.add_argument('-qa',"--given_ang", default="40, 10",  help="ang amplify, the same size with --neural_in_layers",)
     parser.add_argument('-qt',"--train_ang", help="train anglee", action="store_true", )
 
