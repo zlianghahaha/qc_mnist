@@ -573,6 +573,7 @@ def single_priceptro(circuit, q, input, weights, aux=[]):
 
 
 def init(circuit, input, work):
+    # print("\t", len(input))
     for idx in range(len(input)):
         # if input[idx]<0.5:
         #     circuit.x(work[idx])
@@ -583,8 +584,11 @@ def init(circuit, input, work):
             alpha = np.pi - np.arccos(-y_v)
         else:
             alpha = np.pi / 2
-        circuit.ry(alpha, work[idx])
-    circuit.barrier()
+        if(len(input)==1):
+            circuit.ry(alpha, work)
+        else:
+            circuit.ry(alpha, work[idx])
+    # circuit.barrier()
 
 
 def reset_qbits(circuit, q_set):
