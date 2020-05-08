@@ -117,6 +117,18 @@ def one_layer_opt_model(input):
     circuit.ccx(q[0], q[2], q[1])
     circuit.x(q[0])
     circuit.cx(q[0], q[1])
+    circuit.cx(q[0], q[1])
+    circuit.cx(q[0], q[1])
+    circuit.cx(q[0], q[1])
+    circuit.cx(q[0], q[1])
+    circuit.cx(q[0], q[1])
+    circuit.cx(q[0], q[1])
+    circuit.cx(q[1], q[3])
+    circuit.cx(q[1], q[3])
+    circuit.cx(q[1], q[3])
+    circuit.cx(q[1], q[3])
+    circuit.cx(q[1], q[3])
+    circuit.cx(q[1], q[3])
     circuit.cx(q[1], q[3])
     circuit.ccx(q[1], q[4], q[3])
     circuit.measure(q[3], c)
@@ -169,9 +181,8 @@ results = []
 fh = open("ibmq_essex.res", "w+")
 for i in range(x_set_len):
     for j in range(x_set_len):
-        if i!=9 and j!=9:
+        if i>=4 or (i==3 and j>6):
             continue
-
         x = x_set[i]
         y = x_set[j]
 
@@ -208,7 +219,7 @@ for i in range(x_set_len):
         print("Start run:")
         start = time.time()
         iters = 1
-        counts = fire_ibmq(circuit, qc_shots, iters, False, False, backend_name="ibmq_essex")
+        counts = fire_ibmq(circuit, qc_shots, iters, False, False, backend_name="ibmq_essex",qr=qr)
         end = time.time()
         qc_time = end - start
 
