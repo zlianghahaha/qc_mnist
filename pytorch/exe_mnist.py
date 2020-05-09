@@ -60,8 +60,12 @@ def test(interest_num,criterion,test_loader,debug="False"):
         target, new_target = modify_target(target,interest_num)
 
         data, target = data.to(device), target.to(device)
+        if debug:
+            start = time.time()
         output = model(data, False)
         if debug:
+            end = time.time()
+            print("Time",end - start)
             sys.exit(0)
         test_loss += criterion(output, target)  # sum up batch loss
         pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
