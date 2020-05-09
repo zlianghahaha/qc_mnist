@@ -1,0 +1,22 @@
+===================== Your setting is listed as follows ======================
+	Attribute                 Input          
+	interest_class            1, 3, 6        
+	img_size                  4              
+	num_workers               0              
+	batch_size                16             
+	inference_batch_size      32             
+	neural_in_layers          8, 3           
+	init_lr                   0.1            
+	milestones                10, 20         
+	max_epoch                 30             
+	resume_path                              
+	test_only                 0              
+	binary                    0              
+	classic                   0              
+	with_norm                 1              
+	init_qc_lr                1              
+	given_ang                 -1 -1 1 1 1 -1 1 -1, -1 -1 -1
+	train_ang                 1              
+	save_chkp                 1              
+====================== Exploration will start, have fun ======================
+==============================================================================
