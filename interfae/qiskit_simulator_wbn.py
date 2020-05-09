@@ -53,7 +53,10 @@ def do_slp_via_th(input_ori, w_ori):
     return (sum_of_sq + 2 * sum_of_cross) / (length ** 2)
 
 
-def simulate_one_step(I, W, test_L1):
+def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, test_L1):
+    qca_ang = torch.tensor([1 - (qca_x_running_rot * 2)]).acos().item()
+    qc_ang = torch.tensor([1 - (qc_x_running_rot * 2)]).acos().item()
+
     if test_L1:
         W1 = W
         IFM = I.clone().detach()
@@ -79,11 +82,36 @@ def simulate_one_step(I, W, test_L1):
             ccccx(circuit, q_enc[0], q_enc[1], q_enc[2], q_enc[3], q_out[idx], aux[0], aux[1])
             circuit.barrier()
 
+
             # reset_qbits(circuit,q_in)
             # reset_qbits(circuit,q_enc)
 
+        q_qca_out = qk.QuantumRegister(1, "qca_out")
+        q_qca_para = qk.QuantumRegister(1, "qca_para")
+        circuit.add_register(q_qca_out)
+        circuit.add_register(q_qca_para)
+        if qca_x_l_0_5==1:
+            circuit.cx(q_out,q_qca_out)
+            circuit.x(q_out)
+            circuit.ry(qca_ang,q_qca_para)
+            circuit.ccx(q_out,q_qca_para,q_qca_out)
+        else:
+            circuit.cx(q_out, q_qca_out)
+            circuit.ry(qca_ang,q_qca_para)
+            circuit.x(q_qca_para)
+            circuit.ccx(q_out, q_qca_para, q_qca_out)
+
+        q_qc_out = qk.QuantumRegister(1, "qc_out")
+        q_qc_para = qk.QuantumRegister(1, "qc_para")
+        circuit.add_register(q_qc_out)
+        circuit.add_register(q_qc_para)
+        circuit.cx(q_qca_out, q_qc_out)
+        circuit.ry(qc_ang,q_qca_para)
+        circuit.x(q_qca_para)
+        circuit.ccx(q_qca_out, q_qca_para, q_qc_out)
+
         for idx in range(len(W1)):
-            circuit.measure(q_out[idx], c[idx])
+            circuit.measure(q_qc_out[idx], c[idx])
 
 
     else:
@@ -115,8 +143,33 @@ def simulate_one_step(I, W, test_L1):
             # reset_qbits(circuit,q_in)
             # reset_qbits(circuit,q_enc)
 
+        q_qca_out = qk.QuantumRegister(1, "qca_out")
+        q_qca_para = qk.QuantumRegister(1, "qca_para")
+        circuit.add_register(q_qca_out)
+        circuit.add_register(q_qca_para)
+        if qca_x_l_0_5 == 1:
+            circuit.cx(q_out, q_qca_out)
+            circuit.x(q_out)
+            circuit.ry(qca_ang,q_qca_para)
+            circuit.ccx(q_out, q_qca_para, q_qca_out)
+        else:
+            circuit.cx(q_out, q_qca_out)
+            circuit.ry(qca_ang,q_qca_para)
+            circuit.x(q_qca_para)
+            circuit.ccx(q_out, q_qca_para, q_qca_out)
+
+        q_qc_out = qk.QuantumRegister(1, "qc_out")
+        q_qc_para = qk.QuantumRegister(1, "qc_para")
+        circuit.add_register(q_qc_out)
+        circuit.add_register(q_qc_para)
+        circuit.cx(q_qca_out, q_qc_out)
+        circuit.ry(qc_ang,q_qca_para)
+        circuit.x(q_qca_para)
+        circuit.ccx(q_qca_out, q_qca_para, q_qc_out)
+
+
         for idx in range(len(W2)):
-            circuit.measure(q_out[idx], c[idx])
+            circuit.measure(q_qc_out[idx], c[idx])
 
     # print(circuit)
 
@@ -232,7 +285,6 @@ if __name__ == "__main__":
     qca0_x_running_rot = tensor([0.9636, 0.2047, 0.9636, 0.1006])
     qca0_x_l_0_5 = tensor([0., 1., 0., 1.])
     # qca0_x_g_0_5 = tensor([1., 0., 1., 0.])
-
     qc0_x_running_rot = tensor([0.4032, 0.9697, 0.4037, 0.9697])
 
     fc1_weight = tensor([[-1., 1., -1., -1.],
@@ -244,30 +296,30 @@ if __name__ == "__main__":
 
     qc1_x_running_rot = tensor([0.9697, 0.9697])
 
+    IFM = tensor([[0.0196, 0.2353, 0.1020, 0.0000, 0.0078, 0.2353, 0.2980, 0.0039, 0.0039,
+                   0.1647, 0.3843, 0.0392, 0.0078, 0.2157, 0.2353, 0.0118]])
+    out_fc0 = tensor([[0.5922, 0.4236, 0.5922, 0.4348]])
+    out_qca0 = tensor([[0.5706, 0.5415, 0.5706, 0.4917]])
+    out_qc0 = tensor([[0.2301, 0.5251, 0.2304, 0.4768]])
+
+    out_fc1 = tensor([[0.2997, 0.2736]])
+    out_qca1 = tensor([[0.5035, 0.4844]])
+    out_qc1 = tensor([[0.4883, 0.4698]])
+
+    W1 = fc0_weight
+
+    # OFM1 = tensor([[0.0384, 0.3188, 0.4043, 0.0272]])
+
+    W2 = fc1_weight
+
+    # OFM2 = tensor([[0.3904, 0.3105]])
+
+
+    OFM1_QC = torch.zeros_like(out_qc0)
+    OFM2_QC = torch.zeros_like(out_qc1)
 
 
 
-
-
-
-    W1 = tensor([[-1., 1., -1., 1., 1., -1., 1., -1., 1., -1., -1., -1., -1., 1.,
-             1., -1.],
-            [-1., -1., -1., -1., -1., 1., -1., -1., -1., 1., 1., -1., -1., -1.,
-             -1., -1.],
-            [1., 1., 1., 1., 1., 1., -1., 1., 1., 1., 1., 1., 1., -1.,
-             1., 1.],
-            [1., 1., -1., -1., 1., 1., -1., -1., 1., 1., -1., -1., -1., 1.,
-             -1., 1.]])
-
-    OFM1 = tensor([[0.0384, 0.3188, 0.4043, 0.0272]])
-    W2 = tensor([[1., 1., -1., 1.],
-            [-1., 1., -1., -1.]])
-
-    OFM2 = tensor([[0.3904, 0.3105]])
-
-
-    OFM1_QC = torch.zeros_like(OFM1)
-    OFM2_QC = torch.zeros_like(OFM2)
 
     idx = 0
     for w in W1:
@@ -275,14 +327,15 @@ if __name__ == "__main__":
 
         print("\t\tInputs:", IFM)
         print("\t\tWeights:", w)
-        OFM1_QC[0][idx] = simulate_one_step(IFM, w, True)
+        print("\t\tBN:", qca0_x_running_rot[idx], qca0_x_l_0_5[idx], qc0_x_running_rot[idx])
+        OFM1_QC[0][idx] = simulate_one_step(IFM, w, qca0_x_running_rot[idx], qca0_x_l_0_5[idx], qc0_x_running_rot[idx], True)
         print("\t\tResults:", OFM1_QC[0][idx])
         idx += 1
 
     idx = 0
     for w in W2:
         w = w.unsqueeze(0)
-        OFM2_QC[0][idx] = simulate_one_step(OFM1_QC, w, False)
+        OFM2_QC[0][idx] = simulate_one_step(OFM1_QC, w, qca1_x_running_rot[idx], qca1_x_l_0_5[idx], qc1_x_running_rot[idx], False)
         idx += 1
 
     print(OFM1_QC)

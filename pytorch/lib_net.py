@@ -78,9 +78,13 @@ class Net(nn.Module):
                 for layer_idx in range(self.layer):
                     if self.binary:
                         x = (binarize(x-0.5)+1)/2
+                    # print(x)
                     x = getattr(self, "fc"+str(layer_idx))(x)
+                    # print("\t",x)
                     x = getattr(self, "qca"+str(layer_idx))(x, training=False)
+                    # print("\t", x)
                     x = getattr(self, "qc"+str(layer_idx))(x, training=False)
+                    # print("\t", x)
 
         # if num_f2 == 1:
         #     x = torch.cat((x, 1 - x), -1)
