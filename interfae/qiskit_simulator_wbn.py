@@ -91,13 +91,13 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
         circuit.add_register(q_qca_out)
         circuit.add_register(q_qca_para)
         if qca_x_l_0_5==1:
+            circuit.ry(qca_ang, q_qca_para)
             circuit.cx(q_out,q_qca_out)
             circuit.x(q_out)
-            circuit.ry(qca_ang,q_qca_para)
             circuit.ccx(q_out,q_qca_para,q_qca_out)
         else:
+            circuit.ry(qca_ang, q_qca_para)
             circuit.cx(q_out, q_qca_out)
-            circuit.ry(qca_ang,q_qca_para)
             circuit.x(q_qca_para)
             circuit.ccx(q_out, q_qca_para, q_qca_out)
 
@@ -105,10 +105,11 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
         q_qc_para = qk.QuantumRegister(1, "qc_para")
         circuit.add_register(q_qc_out)
         circuit.add_register(q_qc_para)
+        circuit.ry(qc_ang, q_qc_para)
         circuit.cx(q_qca_out, q_qc_out)
-        circuit.ry(qc_ang,q_qca_para)
-        circuit.x(q_qca_para)
-        circuit.ccx(q_qca_out, q_qca_para, q_qc_out)
+        circuit.x(q_qc_para)
+        circuit.ccx(q_qca_out, q_qc_para, q_qc_out)
+
 
         for idx in range(len(W1)):
             circuit.measure(q_qc_out[idx], c[idx])
@@ -148,13 +149,13 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
         circuit.add_register(q_qca_out)
         circuit.add_register(q_qca_para)
         if qca_x_l_0_5 == 1:
+            circuit.ry(qca_ang, q_qca_para)
             circuit.cx(q_out, q_qca_out)
             circuit.x(q_out)
-            circuit.ry(qca_ang,q_qca_para)
             circuit.ccx(q_out, q_qca_para, q_qca_out)
         else:
+            circuit.ry(qca_ang, q_qca_para)
             circuit.cx(q_out, q_qca_out)
-            circuit.ry(qca_ang,q_qca_para)
             circuit.x(q_qca_para)
             circuit.ccx(q_out, q_qca_para, q_qca_out)
 
@@ -162,10 +163,10 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
         q_qc_para = qk.QuantumRegister(1, "qc_para")
         circuit.add_register(q_qc_out)
         circuit.add_register(q_qc_para)
+        circuit.ry(qc_ang, q_qc_para)
         circuit.cx(q_qca_out, q_qc_out)
-        circuit.ry(qc_ang,q_qca_para)
-        circuit.x(q_qca_para)
-        circuit.ccx(q_qca_out, q_qca_para, q_qc_out)
+        circuit.x(q_qc_para)
+        circuit.ccx(q_qca_out, q_qc_para, q_qc_out)
 
 
         for idx in range(len(W2)):
@@ -325,6 +326,7 @@ if __name__ == "__main__":
     for w in W1:
         w = w.unsqueeze(0)
 
+        print("-"*100)
         print("\t\tInputs:", IFM)
         print("\t\tWeights:", w)
         print("\t\tBN:", qca0_x_running_rot[idx], qca0_x_l_0_5[idx], qc0_x_running_rot[idx])
