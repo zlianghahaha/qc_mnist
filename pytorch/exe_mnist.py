@@ -52,7 +52,7 @@ def train(epoch,interest_num,criterion,train_loader):
 accur = []
 
 
-def test(interest_num,criterion,test_loader):
+def test(interest_num,criterion,test_loader,debug="False"):
     model.eval()
     test_loss = 0
     correct = 0
@@ -61,7 +61,8 @@ def test(interest_num,criterion,test_loader):
 
         data, target = data.to(device), target.to(device)
         output = model(data, False)
-        # sys.exit(0)
+        if debug:
+            sys.exit(0)
         test_loss += criterion(output, target)  # sum up batch loss
         pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
@@ -130,6 +131,7 @@ def parse_args():
     parser.add_argument('-chk',"--save_chkp", help="Save checkpoints", action="store_true", )
     # parser.add_argument("--save_path", help="save path", )
 
+    parser.add_argument('-deb', "--debug", help="Debug mode", action="store_true", )
 
     args = parser.parse_args()
     return args
@@ -160,7 +162,7 @@ if __name__ == "__main__":
     resume_path = args.resume_path
     training = not(args.test_only)
     binary = args.binary
-
+    debug = args.debug
     classic = args.classic
     init_qc_lr = float(args.init_qc_lr)
     with_norm = args.with_norm
@@ -200,7 +202,7 @@ if __name__ == "__main__":
 
     train_loader, test_loader = load_data(interest_class)
     criterion = nn.CrossEntropyLoss()
-    model = Net(img_size,layers,with_norm,given_ang,train_ang,training,binary,classic).to(device)
+    model = Net(img_size,layers,with_norm,given_ang,train_ang,training,binary,classic,debug).to(device)
 
     print(model)
 
@@ -293,5 +295,5 @@ if __name__ == "__main__":
             else:
                 print(name, para)
         print("="*100)
-        test(interest_class,criterion,test_loader)
+        test(interest_class,criterion,test_loader,debug)
 

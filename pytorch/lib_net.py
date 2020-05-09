@@ -5,7 +5,7 @@ import torch
 
 ## Define the NN architecture
 class Net(nn.Module):
-    def __init__(self,img_size,layers,with_norm,given_ang,train_ang,training,binary,classic):
+    def __init__(self,img_size,layers,with_norm,given_ang,train_ang,training,binary,classic,debug="False"):
         super(Net, self).__init__()
 
         # self.fc = []
@@ -18,6 +18,7 @@ class Net(nn.Module):
         self.binary = binary
         self.classic = classic
         loop_in_size = self.in_size
+        self.debug = debug
         for idx in range(self.layer):
             fc_name = "fc"+str(idx)
             if classic:
@@ -78,13 +79,18 @@ class Net(nn.Module):
                 for layer_idx in range(self.layer):
                     if self.binary:
                         x = (binarize(x-0.5)+1)/2
-                    # print(x)
+
+                    if self.debug:
+                        print("\t",x)
                     x = getattr(self, "fc"+str(layer_idx))(x)
-                    # print("\t",x)
+                    if self.debug:
+                        print("\t",x)
                     x = getattr(self, "qca"+str(layer_idx))(x, training=False)
-                    # print("\t", x)
+                    if self.debug:
+                        print("\t", x)
                     x = getattr(self, "qc"+str(layer_idx))(x, training=False)
-                    # print("\t", x)
+                    if self.debug:
+                        print("\t", x)
 
         # if num_f2 == 1:
         #     x = torch.cat((x, 1 - x), -1)
