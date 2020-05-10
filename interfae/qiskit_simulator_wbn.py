@@ -120,8 +120,14 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
         OFM1_QC = I
         input = OFM1_QC[0] * 2 - 1
 
-        q_in = qk.QuantumRegister(4, "io")
-        q_enc = qk.QuantumRegister(2, "encoder")
+        # q_in = qk.QuantumRegister(4, "io")
+        # q_enc = qk.QuantumRegister(2, "encoder")
+        # q_out = qk.QuantumRegister(len(W2), "output")
+        # c = qk.ClassicalRegister(len(W2), "reg")
+        # aux = qk.QuantumRegister(4, "aux")
+
+        q_in = qk.QuantumRegister(8, "io")
+        q_enc = qk.QuantumRegister(4, "encoder")
         q_out = qk.QuantumRegister(len(W2), "output")
         c = qk.ClassicalRegister(len(W2), "reg")
         aux = qk.QuantumRegister(4, "aux")
@@ -130,9 +136,9 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
         circuit = qk.QuantumCircuit(q_in, q_enc, q_out, aux, c)
 
         for idx in range(len(W2)):
-            SLP_4_encoding(circuit, q_in, q_enc, input, aux)
+            SLP_8_encoding(circuit, q_in, q_enc, input, aux)
 
-            SLP_4_Uw(circuit, q_enc, W2[idx], aux)
+            SLP_8_Uw(circuit, q_enc, W2[idx], aux)
             circuit.barrier()
 
             for qbit in q_enc[0:2]:
@@ -173,7 +179,8 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
             circuit.measure(q_qc_out[idx], c[idx])
 
     # print(circuit)
-
+    #
+    # sys.exit(0)
     # %%
 
     qc_shots = 1000
@@ -361,6 +368,8 @@ if __name__ == "__main__":
         OFM1_QC[0][idx] = simulate_one_step(IFM, w, qca0_x_running_rot[idx], qca0_x_l_0_5[idx], qc0_x_running_rot[idx], True)
         print("\t\tResults:", OFM1_QC[0][idx])
         idx += 1
+
+
 
     idx = 0
     for w in W2:
