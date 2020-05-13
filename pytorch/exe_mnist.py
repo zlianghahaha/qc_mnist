@@ -132,6 +132,7 @@ def parse_args():
     parser.add_argument('-ql','--init_qc_lr', default="0.1", help="QC Batchnorm learning rate", )
     parser.add_argument('-qa',"--given_ang", default="1 -1 1 -1, -1 -1",  help="ang amplify, the same size with --neural_in_layers",)
     parser.add_argument('-qt',"--train_ang", help="train anglee", action="store_true", )
+    parser.add_argument('-qs', "--sim_range", default="0, 1551", help="quantum simulation range",)
 
     # File
     parser.add_argument('-chk',"--save_chkp", help="Save checkpoints", action="store_true", )
@@ -174,7 +175,7 @@ if __name__ == "__main__":
     init_qc_lr = float(args.init_qc_lr)
     with_norm = args.with_norm
 
-
+    sim_range = [int(x.strip()) for x in args.sim_range.split(",")]
 
     given_ang = [[int(y) for y in x.strip().split(" ")] for x in args.given_ang.split(",")]
 
@@ -294,36 +295,42 @@ if __name__ == "__main__":
             print("=" * 60)
             print()
     else:
-        print("=" * 20, max_epoch, "Testing", "=" * 20)
-        print("=" * 100)
-        for name, para in model.named_parameters():
-            if "fc" in name:
-                print(name,binarize(para))
-            else:
-                print(name, para)
-        print("="*100)
+        # print("=" * 20, max_epoch, "Testing", "=" * 20)
+        # print("=" * 100)
+        # for name, para in model.named_parameters():
+        #     if "fc" in name:
+        #         print(name,binarize(para))
+        #     else:
+        #         print(name, para)
+        # print("="*100)
         # test(interest_class,criterion,test_loader,debug)
         correct = 0
         qc_correct = 0
+        test_idx = 0
         for data, target in test_loader:
+            if test_idx < sim_range[0] or test_idx >= sim_range[1]:
+                continue
             target, new_target = modify_target(target, interest_class)
 
-            # data, target = data.to(device), target.to(device)
-
             start = time.time()
-
             output = model(data, False)
-            print(output)
-            qc_output = run_simulator(model,data[0][0],layers)
             end = time.time()
-            print("Time", end - start)
+
+            q_start = time.time()
+            qc_output = run_simulator(model,data[0][0],layers)
+            q_end = time.time()
+
+            print("Test iteration {}: COut {}, QOut {}, CTime {}, QTime {}".format(test_idx,output,qc_output,end-start,q_end-q_start))
+            test_idx+=1
+
             pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
             qc_pred = qc_output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
             qc_correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-            print('Test set: Accuracy Class: {}/{}, Accuracy QC: {}/{}'.format(
-                correct, len(test_loader.dataset), qc_correct, len(test_loader.dataset)))
-            sys.exit(0)
+
+        print('Test set: Accuracy Class: {}/{}, Accuracy QC: {}/{}'.format(
+            correct, sim_range[1]-sim_range[0], qc_correct, sim_range[1]-sim_range[0]))
+
 
 
 

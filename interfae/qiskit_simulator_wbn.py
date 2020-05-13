@@ -150,8 +150,6 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
                 circuit.ccx(q_enc[0], q_enc[1], q_out[idx])
                 circuit.barrier()
             elif OFM1_QC.shape[1] == 8:
-                print("====")
-                print("\t",input)
                 SLP_8_encoding(circuit, q_in, q_enc, input, aux)
                 SLP_8_Uw(circuit, q_enc, W2[idx], aux)
                 circuit.barrier()
@@ -282,7 +280,7 @@ def run_simulator(model,IFM,layers):
         # print("\t\tWeights:", w)
         # print("\t\tBN:", qca0_x_running_rot[idx], qca0_x_l_0_5[idx], qc0_x_running_rot[idx])
         OFM1_QC[0][idx] = simulate_one_step(IFM, w, qca0_x_running_rot[idx], qca0_x_l_0_5[idx], qc0_x_running_rot[idx], True)
-        print("\t\tResults OFM 1",idx,":", OFM1_QC[0][idx])
+        # print("\t\tResults OFM 1",idx,":", OFM1_QC[0][idx])
         idx += 1
 
 
@@ -296,11 +294,11 @@ def run_simulator(model,IFM,layers):
         # print("\t\tBN:", qca1_x_running_rot[idx], qca1_x_l_0_5[idx], qc1_x_running_rot[idx])
         OFM2_QC[0][idx] = simulate_one_step(OFM1_QC, w, qca1_x_running_rot[idx], qca1_x_l_0_5[idx],
                                             qc1_x_running_rot[idx], False)
-        print("\t\tResults OFM 2",idx,":", OFM2_QC[0][idx])
+        # print("\t\tResults OFM 2",idx,":", OFM2_QC[0][idx])
         idx += 1
 
-    print("\t",OFM1_QC)
-    print("\t",OFM2_QC)
+    # print("\t",OFM1_QC)
+    # print("\t",OFM2_QC)
 
     return OFM2_QC
     # OFM = {}
