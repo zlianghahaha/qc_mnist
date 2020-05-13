@@ -250,7 +250,7 @@ def run_simulator(model,IFM,layers):
     print(qc1_x_running_rot)
     print(qca1_x_l_0_5)
     print(qca1_x_running_rot)
-    sys.exit(0)
+    # sys.exit(0)
 
     W1 = fc0_weight
     W2 = fc1_weight
