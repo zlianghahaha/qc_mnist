@@ -72,7 +72,7 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
         maxIndex = len(input)
         circuit = qk.QuantumCircuit(q_in, q_enc, q_out, aux, c)
 
-        print(input)
+        # print(input)
 
         for idx in range(len(W1)):
             SLP_16_encoding(circuit, q_in, q_enc, input, aux)
@@ -121,7 +121,7 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
     else:
         W2 = W
         OFM1_QC = I
-        input = OFM1_QC[0] * 2 - 1
+        input = 1 - OFM1_QC[0] * 2
 
         if OFM1_QC.shape[1]==4:
             q_in = qk.QuantumRegister(4, "io")
@@ -143,16 +143,23 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
             if OFM1_QC.shape[1]==4:
                 SLP_4_encoding(circuit, q_in, q_enc, input, aux)
                 SLP_4_Uw(circuit, q_enc, W2[idx], aux)
+                circuit.barrier()
+                for qbit in q_enc[0:2]:
+                    circuit.h(qbit)
+                    circuit.x(qbit)
+                circuit.ccx(q_enc[0], q_enc[1], q_out[idx])
+                circuit.barrier()
             elif OFM1_QC.shape[1] == 8:
+                print("====")
+                print("\t",input)
                 SLP_8_encoding(circuit, q_in, q_enc, input, aux)
                 SLP_8_Uw(circuit, q_enc, W2[idx], aux)
-            circuit.barrier()
-
-            for qbit in q_enc[0:2]:
-                circuit.h(qbit)
-                circuit.x(qbit)
-            circuit.ccx(q_enc[0], q_enc[1], q_out[idx])
-            circuit.barrier()
+                circuit.barrier()
+                for qbit in q_enc[0:3]:
+                    circuit.h(qbit)
+                    circuit.x(qbit)
+                cccx(circuit,q_enc[0], q_enc[1], q_enc[2], q_out[idx], aux[0])
+                circuit.barrier()
 
             # reset_qbits(circuit,q_in)
             # reset_qbits(circuit,q_enc)
@@ -245,9 +252,7 @@ def run_simulator(model,IFM,layers):
             qca1_x_running_rot = para
         elif name == "qca1.x_l_0_5":
             qca1_x_l_0_5 = para
-    #
-    out_qc0 = tensor([[0.0075, 0.4576, 0.5068, 0.0066]])
-    out_qc1 = tensor([[0.5041, 0.4667]])
+
 
     # print(IFM)
     # print(fc0_weight)
@@ -272,20 +277,26 @@ def run_simulator(model,IFM,layers):
     for w in W1:
         w = w.unsqueeze(0)
 
-        print("-"*100)
-        print("\t\tInputs:", IFM)
-        print("\t\tWeights:", w)
-        print("\t\tBN:", qca0_x_running_rot[idx], qca0_x_l_0_5[idx], qc0_x_running_rot[idx])
+        # print("-"*100)
+        # print("\t\tInputs:", IFM)
+        # print("\t\tWeights:", w)
+        # print("\t\tBN:", qca0_x_running_rot[idx], qca0_x_l_0_5[idx], qc0_x_running_rot[idx])
         OFM1_QC[0][idx] = simulate_one_step(IFM, w, qca0_x_running_rot[idx], qca0_x_l_0_5[idx], qc0_x_running_rot[idx], True)
-        print("\t\tResults:", OFM1_QC[0][idx])
+        print("\t\tResults OFM 1",idx,":", OFM1_QC[0][idx])
         idx += 1
 
 
     idx = 0
     for w in W2:
         w = w.unsqueeze(0)
+
+        # print("-"*100)
+        # print("\t\tInputs:", OFM1_QC)
+        # print("\t\tWeights:", w)
+        # print("\t\tBN:", qca1_x_running_rot[idx], qca1_x_l_0_5[idx], qc1_x_running_rot[idx])
         OFM2_QC[0][idx] = simulate_one_step(OFM1_QC, w, qca1_x_running_rot[idx], qca1_x_l_0_5[idx],
                                             qc1_x_running_rot[idx], False)
+        print("\t\tResults OFM 2",idx,":", OFM2_QC[0][idx])
         idx += 1
 
     print("\t",OFM1_QC)
