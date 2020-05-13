@@ -309,6 +309,7 @@ if __name__ == "__main__":
         test_idx = 0
         for data, target in test_loader:
             if test_idx < sim_range[0] or test_idx >= sim_range[1]:
+                test_idx += 1
                 continue
             target, new_target = modify_target(target, interest_class)
 
