@@ -57,6 +57,7 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
     qca_ang = torch.tensor([1 - (qca_x_running_rot * 2)]).acos().item()
     qc_ang = torch.tensor([1 - (qc_x_running_rot * 2)]).acos().item()
 
+
     if test_L1:
         W1 = W
         IFM = I.clone().detach()
@@ -70,6 +71,8 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
 
         maxIndex = len(input)
         circuit = qk.QuantumCircuit(q_in, q_enc, q_out, aux, c)
+
+        print(input)
 
         for idx in range(len(W1)):
             SLP_16_encoding(circuit, q_in, q_enc, input, aux)
@@ -182,7 +185,9 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
         for idx in range(len(W2)):
             circuit.measure(q_qc_out[idx], c[idx])
 
-    qc_shots = 10000
+    # print(circuit)
+    # sys.exit(0)
+    qc_shots = 8192
     num_c_reg = 1
 
     start = time.time()
@@ -220,6 +225,9 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
 
 
 def run_simulator(model,IFM,layers):
+
+    IFM = IFM.view(1, -1, )
+
     for name, para in model.named_parameters():
         if name=="fc0.weight":
             fc0_weight = binarize(para)
@@ -241,16 +249,17 @@ def run_simulator(model,IFM,layers):
     out_qc0 = tensor([[0.0075, 0.4576, 0.5068, 0.0066]])
     out_qc1 = tensor([[0.5041, 0.4667]])
 
-    print(fc0_weight)
-    print(qc0_x_running_rot)
-    print(qca0_x_l_0_5)
-    print(qca0_x_running_rot)
-
-    print(fc1_weight)
-    print(qc1_x_running_rot)
-    print(qca1_x_l_0_5)
-    print(qca1_x_running_rot)
-    # sys.exit(0)
+    # print(IFM)
+    # print(fc0_weight)
+    # print(qc0_x_running_rot)
+    # print(qca0_x_l_0_5)
+    # print(qca0_x_running_rot)
+    #
+    # print(fc1_weight)
+    # print(qc1_x_running_rot)
+    # print(qca1_x_l_0_5)
+    # print(qca1_x_running_rot)
+    # # sys.exit(0)
 
     W1 = fc0_weight
     W2 = fc1_weight

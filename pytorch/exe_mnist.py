@@ -294,14 +294,14 @@ if __name__ == "__main__":
             print("=" * 60)
             print()
     else:
-        print("=" * 20, max_epoch, "Testing", "=" * 20)
-        print("=" * 100)
-        for name, para in model.named_parameters():
-            if "fc" in name:
-                print(name,binarize(para))
-            else:
-                print(name, para)
-        print("="*100)
+        # print("=" * 20, max_epoch, "Testing", "=" * 20)
+        # print("=" * 100)
+        # for name, para in model.named_parameters():
+        #     if "fc" in name:
+        #         print(name,binarize(para))
+        #     else:
+        #         print(name, para)
+        # print("="*100)
         # test(interest_class,criterion,test_loader,debug)
 
         for data, target in test_loader:
