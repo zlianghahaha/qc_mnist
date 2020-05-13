@@ -207,7 +207,7 @@ class QC_Norm_try3(nn.Module):
     def forward(self, x, training=True):
         if not training:
             if not self.printed:
-                print("self.ang_inc", self.ang_inc)
+                # print("self.ang_inc", self.ang_inc)
                 self.printed = True
             x_1 = (self.x_running_rot * x)
 
