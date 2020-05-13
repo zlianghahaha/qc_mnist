@@ -238,19 +238,19 @@ def run_simulator(model,IFM,layers):
         elif name == "qca1.x_l_0_5":
             qca1_x_l_0_5 = para
     #
-    # out_qc0 = tensor([[0.0075, 0.4576, 0.5068, 0.0066]])
-    # out_qc1 = tensor([[0.5041, 0.4667]])
+    out_qc0 = tensor([[0.0075, 0.4576, 0.5068, 0.0066]])
+    out_qc1 = tensor([[0.5041, 0.4667]])
 
-    # print(fc0_weight)
-    # print(qc0_x_running_rot)
-    # print(qca0_x_l_0_5)
-    # print(qca0_x_running_rot)
-    #
-    # print(fc1_weight)
-    # print(qc1_x_running_rot)
-    # print(qca1_x_l_0_5)
-    # print(qca1_x_running_rot)
-    # sys.exit(0)
+    print(fc0_weight)
+    print(qc0_x_running_rot)
+    print(qca0_x_l_0_5)
+    print(qca0_x_running_rot)
+
+    print(fc1_weight)
+    print(qc1_x_running_rot)
+    print(qca1_x_l_0_5)
+    print(qca1_x_running_rot)
+    sys.exit(0)
 
     W1 = fc0_weight
     W2 = fc1_weight
@@ -258,12 +258,19 @@ def run_simulator(model,IFM,layers):
     OFM1_QC = torch.zeros([1,layers[0]])
     OFM2_QC = torch.zeros([1,layers[1]])
 
+
     idx = 0
     for w in W1:
         w = w.unsqueeze(0)
-        OFM1_QC[0][idx] = simulate_one_step(IFM, w, qca0_x_running_rot[idx], qca0_x_l_0_5[idx], qc0_x_running_rot[idx],
-                                            True)
+
+        print("-"*100)
+        print("\t\tInputs:", IFM)
+        print("\t\tWeights:", w)
+        print("\t\tBN:", qca0_x_running_rot[idx], qca0_x_l_0_5[idx], qc0_x_running_rot[idx])
+        OFM1_QC[0][idx] = simulate_one_step(IFM, w, qca0_x_running_rot[idx], qca0_x_l_0_5[idx], qc0_x_running_rot[idx], True)
+        print("\t\tResults:", OFM1_QC[0][idx])
         idx += 1
+
 
     idx = 0
     for w in W2:
