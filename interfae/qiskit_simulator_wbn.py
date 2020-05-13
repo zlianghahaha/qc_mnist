@@ -222,9 +222,9 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
 def run_simulator(model,IFM,layers):
     for name, para in model.named_parameters():
         if name=="fc0.weight":
-            fc0_weight = para
+            fc0_weight = binarize(para)
         elif name=="fc1.weight":
-            fc1_weight = para
+            fc1_weight = binarize(para)
         elif name=="qc0.x_running_rot":
             qc0_x_running_rot = para
         elif name == "qca0.x_l_0_5":
@@ -240,6 +240,17 @@ def run_simulator(model,IFM,layers):
     #
     # out_qc0 = tensor([[0.0075, 0.4576, 0.5068, 0.0066]])
     # out_qc1 = tensor([[0.5041, 0.4667]])
+
+    # print(fc0_weight)
+    # print(qc0_x_running_rot)
+    # print(qca0_x_l_0_5)
+    # print(qca0_x_running_rot)
+    #
+    # print(fc1_weight)
+    # print(qc1_x_running_rot)
+    # print(qca1_x_l_0_5)
+    # print(qca1_x_running_rot)
+    # sys.exit(0)
 
     W1 = fc0_weight
     W2 = fc1_weight

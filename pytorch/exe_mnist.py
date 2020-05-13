@@ -296,12 +296,12 @@ if __name__ == "__main__":
     else:
         print("=" * 20, max_epoch, "Testing", "=" * 20)
         print("=" * 100)
-        # for name, para in model.named_parameters():
-        #     if "fc" in name:
-        #         print(name,binarize(para))
-        #     else:
-        #         print(name, para)
-        # print("="*100)
+        for name, para in model.named_parameters():
+            if "fc" in name:
+                print(name,binarize(para))
+            else:
+                print(name, para)
+        print("="*100)
         # test(interest_class,criterion,test_loader,debug)
 
         for data, target in test_loader:
@@ -314,17 +314,12 @@ if __name__ == "__main__":
             output = model(data, False)
             print(output)
             qc_output = run_simulator(model,data[0][0],layers)
-
             end = time.time()
             print("Time", end - start)
-
-            test_loss += criterion(output, target)  # sum up batch loss
-            qc_test_loss += criterion(qc_output, target)  # sum up batch loss
             pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
             qc_pred = qc_output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
             qc_correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-
             print('Test set: Accuracy Class: {}/{}, Accuracy QC: {}/{}'.format(
                 correct, len(test_loader.dataset), qc_correct, len(test_loader.dataset)))
             sys.exit(0)
