@@ -43,14 +43,14 @@ class Net(nn.Module):
 
         if self.classic == 1 and self.with_norm==0:
             for layer_idx in range(self.layer):
-                if self.binary:
+                if self.binary and layer_idx==0:
                     x = (binarize(x - 0.5) + 1) / 2
                 x = getattr(self, "fc" + str(layer_idx))(x)
                 x = x.pow(2)
 
         elif self.classic == 1 and self.with_norm==1:
             for layer_idx in range(self.layer):
-                if self.binary:
+                if self.binary and layer_idx==0:
                     x = (binarize(x - 0.5) + 1) / 2
                 x = getattr(self, "fc" + str(layer_idx))(x)
                 x = x.pow(2)
@@ -63,21 +63,21 @@ class Net(nn.Module):
 
         elif self.classic == 0 and self.with_norm==0:
             for layer_idx in range(self.layer):
-                if self.binary:
+                if self.binary and layer_idx==0:
                     x = (binarize(x - 0.5) + 1) / 2
                 x = getattr(self, "fc" + str(layer_idx))(x)
 
         else:   # Quantum Training
             if self.training == 1:
                 for layer_idx in range(self.layer):
-                    if self.binary:
+                    if self.binary and layer_idx==0:
                         x = (binarize(x-0.5)+1)/2
                     x = getattr(self, "fc"+str(layer_idx))(x)
                     x = getattr(self, "qca"+str(layer_idx))(x)
                     x = getattr(self, "qc"+str(layer_idx))(x)
             else:
                 for layer_idx in range(self.layer):
-                    if self.binary:
+                    if self.binary and layer_idx==0:
                         x = (binarize(x-0.5)+1)/2
 
                     if self.debug:

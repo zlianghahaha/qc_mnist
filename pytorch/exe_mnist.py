@@ -68,7 +68,7 @@ def test(interest_num,criterion,test_loader,debug="False"):
         if debug:
             end = time.time()
             print("Time",end - start)
-            sys.exit(0)
+            # sys.exit(0)
         test_loss += criterion(output, target)  # sum up batch loss
         pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
@@ -304,34 +304,34 @@ if __name__ == "__main__":
         #         print(name, para)
         # print("="*100)
         test(interest_class,criterion,test_loader,debug)
-        correct = 0
-        qc_correct = 0
-        test_idx = 0
-        for data, target in test_loader:
-            if test_idx < sim_range[0] or test_idx >= sim_range[1]:
-                test_idx += 1
-                continue
-            target, new_target = modify_target(target, interest_class)
-
-            start = time.time()
-            output = model(data, False)
-            end = time.time()
-
-            q_start = time.time()
-            qc_output = run_simulator(model,data[0][0],layers)
-            q_end = time.time()
-
-            print("Test iteration {}: COut {}, QOut {}, CTime {}, QTime {}".format(test_idx,output,qc_output,end-start,q_end-q_start))
-            test_idx+=1
-
-            pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
-            qc_pred = qc_output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
-            correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-            qc_correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-
-        print('Test set: Accuracy Class: {}/{}, Accuracy QC: {}/{}'.format(
-            correct, sim_range[1]-sim_range[0], qc_correct, sim_range[1]-sim_range[0]))
-
+        # correct = 0
+        # qc_correct = 0
+        # test_idx = 0
+        # for data, target in test_loader:
+        #     if test_idx < sim_range[0] or test_idx >= sim_range[1]:
+        #         test_idx += 1
+        #         continue
+        #     target, new_target = modify_target(target, interest_class)
+        #
+        #     start = time.time()
+        #     output = model(data, False)
+        #     end = time.time()
+        #
+        #     q_start = time.time()
+        #     qc_output = run_simulator(model,data[0][0],layers)
+        #     q_end = time.time()
+        #
+        #     print("Test iteration {}: COut {}, QOut {}, CTime {}, QTime {}".format(test_idx,output,qc_output,end-start,q_end-q_start))
+        #     test_idx+=1
+        #
+        #     pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
+        #     qc_pred = qc_output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
+        #     correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+        #     qc_correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+        #
+        # print('Test set: Accuracy Class: {}/{}, Accuracy QC: {}/{}'.format(
+        #     correct, sim_range[1]-sim_range[0], qc_correct, sim_range[1]-sim_range[0]))
+        #
 
 
 
