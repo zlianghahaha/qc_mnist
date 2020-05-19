@@ -144,6 +144,8 @@ class BinaryLinear(nn.Linear):
     def forward(self, input):
         binary_weight = binarize(self.weight)
         if self.bias is None:
+            # print(input,binary_weight,self.do_slp_via_th(input, binary_weight))
+            # sys.exit(0)
             return self.do_slp_via_th(input, binary_weight)
 
         else:
@@ -181,6 +183,7 @@ class BinaryLinearClassic(nn.Linear):
         binary_weight = binarize(self.weight)
         if self.bias is None:
             output = F.linear(input, binary_weight)
+            # print(input,binary_weight)
             output = torch.div(output, input.shape[-1])
             # output = torch.pow(output, 2)
 

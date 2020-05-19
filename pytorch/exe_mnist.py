@@ -42,7 +42,7 @@ def train(epoch,interest_num,criterion,train_loader):
 
         optimizer.step()
 
-        if batch_idx % 100 == 0:
+        if batch_idx % 10 == 0:
             logger.info('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tAccuracy: {}/{} ({:.2f}%)'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                        100. * batch_idx / len(train_loader), loss, correct, (batch_idx + 1) * len(data),
@@ -54,7 +54,7 @@ def train(epoch,interest_num,criterion,train_loader):
 accur = []
 
 
-def test(interest_num,criterion,test_loader,debug="False"):
+def test(interest_num,criterion,test_loader,debug=False):
     model.eval()
     test_loss = 0
     correct = 0
@@ -102,7 +102,7 @@ def load_data(interest_num):
     train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
                                                num_workers=num_workers, shuffle=True, drop_last=True)
     test_loader = torch.utils.data.DataLoader(test_data, batch_size=inference_batch_size,
-                                              num_workers=num_workers, shuffle=False, drop_last=True)
+                                              num_workers=num_workers, shuffle=True, drop_last=True)
 
     return train_loader,test_loader
 
@@ -110,7 +110,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='QuantumFlow Classification Training')
 
     # ML related
-    # parser.add_argument('--device', default='cuda', help='device')
+    parser.add_argument('--device', default='cuda', help='device')
     parser.add_argument('-c','--interest_class',default="3, 6",help="investigate classes",)
     parser.add_argument('-s','--img_size', default="4", help="image size 4: 4*4", )
     parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
