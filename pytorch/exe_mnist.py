@@ -110,7 +110,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='QuantumFlow Classification Training')
 
     # ML related
-    parser.add_argument('--device', default='cuda', help='device')
+    # parser.add_argument('--device', default='cuda', help='device')
     parser.add_argument('-c','--interest_class',default="3, 6",help="investigate classes",)
     parser.add_argument('-s','--img_size', default="4", help="image size 4: 4*4", )
     parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
