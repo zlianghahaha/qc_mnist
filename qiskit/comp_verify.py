@@ -46,7 +46,7 @@ def fire_ibmq(circuit, shots, iter, run_model=0, printable=True, backend_name='i
         print(circuit)
 
     # provider = IBMQ.get_provider('ibm-q-academic')
-    provider = IBMQ.get_provider('ibm-q-open')
+    provider = IBMQ.get_provider('ibm-q')
     count_set = []
     start = time.time()
     for it in range(iter):
