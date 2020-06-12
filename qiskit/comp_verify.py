@@ -36,50 +36,46 @@ def analyze(counts):
     return mycount, bits
 
 
-def fire_ibmq(circuit, shots, iter, Simulation=False, printable=True, backend_name='ibmq_essex', mapping={}):
+# Run Model
+# 0: simulation with ideal
+# 1: simulation with noisy
+# 2: real quantum
+
+def fire_ibmq(circuit, shots, iter, run_model=0, printable=True, backend_name='ibmq_essex', mapping=None):
     if printable:
         print(circuit)
 
+    provider = IBMQ.get_provider('ibm-q-academic')
     count_set = []
     start = time.time()
     for it in range(iter):
-        if not Simulation:
-            provider = IBMQ.get_provider('ibm-q-academic')
-            # ibm-q-academic backends:
-            #  5 qubits: ibmq_valencia
-            # 20 qubits: ibmq_poughkeepsie, ibmq_johannesburg,ibmq_boeblingen, ibmq_20_tokyo
-            # 53 qubits: ibmq_rochester
-
-            # To get a specific qubit backend:
+        if run_model==2:
             backend = provider.get_backend(backend_name)
-        else:
-            provider = IBMQ.get_provider('ibm-q-academic')
-            backend = provider.get_backend('ibmq_burlington')
+            job_ibm_q = execute(circuit, backend, shots=shots, initial_layout=mapping)
+        elif run_model==1:
+            backend = provider.get_backend(backend_name)
             coupling_map = backend.configuration().coupling_map
-
-            # Generate an Aer noise model for device
             noise_model = NoiseModel.from_backend(backend)
             basis_gates = noise_model.basis_gates
             backend = Aer.get_backend('qasm_simulator')
 
-        if Simulation:
             job_ibm_q = execute(circuit, backend,
-                          coupling_map=coupling_map,
-                          noise_model=noise_model,
-                          basis_gates=basis_gates,
-                          initial_layout=mapping,
-                          shots=shots)
-        elif len(mapping.keys()) != 0:
+                                coupling_map=coupling_map,
+                                noise_model=noise_model,
+                                basis_gates=basis_gates,
+                                initial_layout=mapping,
+                                shots=shots)
+        elif run_model==0:
+            backend = Aer.get_backend('qasm_simulator')
             job_ibm_q = execute(circuit, backend, shots=shots, initial_layout=mapping)
-        else:
-            job_ibm_q = execute(circuit, backend, shots=shots)
 
         job_monitor(job_ibm_q)
         result_ibm_q = job_ibm_q.result()
         counts = result_ibm_q.get_counts()
         count_set.append(counts)
     end = time.time()
-    print("Simulation time:", end - start)
+    if printable:
+        print("Simulation time:", end - start)
 
     return count_set
 
@@ -222,7 +218,7 @@ def opt_3_design(input, w):
 
     circuit.barrier()
     circuit.measure(q_io[0], c)
-    mapping = {q_io[0]: 0}
+    mapping = {q_io[0]: 4}
 
     return circuit, mapping
 
@@ -251,7 +247,8 @@ for i in range(11):
     input = 1 - torch.tensor(input_ori) * 2
     w = [0.0, 1.0]
 
-    # print(input_ori,"start")
+    print("="*50)
+    print(input_ori,"start")
 
 
 
@@ -279,13 +276,26 @@ for i in range(11):
 
     #
     #
-    counts = fire_ibmq(opt3_circuit, qc_shots, 1, True, False,mapping=opt3_mapping)
+    counts = fire_ibmq(opt3_circuit, qc_shots, 1, run_model=0, printable=False)
     (mycount, bits) = analyze(counts[0])
     for b in range(bits):
         sim_res = float(mycount[b]) / qc_shots
-        results[tuple(input_ori)].append(sim_res)
-        print("qiskit_sim",sim_res)
-    print()
+        # results[tuple(input_ori)].append(sim_res)
+        print("qiskit_sim without noisy", sim_res)
+
+    counts = fire_ibmq(opt3_circuit, qc_shots, 1, run_model=1, printable=False, backend_name='ibmq_valencia', mapping=opt3_mapping)
+    (mycount, bits) = analyze(counts[0])
+    for b in range(bits):
+        sim_res = float(mycount[b]) / qc_shots
+        # results[tuple(input_ori)].append(sim_res)
+        print("qiskit_sim with noisy",sim_res)
+
+    counts = fire_ibmq(opt3_circuit, qc_shots, 1, False, False, backend_name="ibmq_valencia", mapping=opt3_mapping)
+    (mycount, bits) = analyze(counts[0])
+    for b in range(bits):
+        opt3_res = float(mycount[b]) / qc_shots
+        # results[tuple(input_ori)].append(float(mycount[b]) / qc_shots)
+        print("qiskit_sim with noisy", opt3_res)
 
     #
     # counts = fire_ibmq(ori_circuit, qc_shots, 1, False, False, backend_name="ibmq_valencia", mapping=ori_mapping)
