@@ -1,8 +1,7 @@
-from torch.nn.parameter import Parameter
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
-
+from torch.nn.parameter import Parameter
 
 
 class QC_Norm(nn.Module):

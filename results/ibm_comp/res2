@@ -1,0 +1,116 @@
+/usr/bin/python3.6 /weiwen/pycharm/repo/qc_mnist/qiskit/comp_verify.py
+/home/weiwen/.local/lib/python3.6/site-packages/qiskit/providers/ibmq/credentials/configrc.py:130: UserWarning: Credentials already present. Set overwrite=True to overwrite.
+  warnings.warn('Credentials already present. '
+[0.0, 1.0] start
+Job Status: job has successfully run
+Simulation time: 45.86035227775574
+Job Status: job has successfully run
+Simulation time: 33.38291811943054
+Job Status: job has successfully run
+Simulation time: 31.12537670135498
+Job Status: job has successfully run
+Simulation time: 32.76474571228027
+[0.0, 1.0] tensor([[1.]]) 0.862060546875 0.9122314453125 0.927001953125 0.9471435546875
+[0.1, 0.9] start
+Job Status: job has successfully run
+Simulation time: 30.815760612487793
+Job Status: job has successfully run
+Simulation time: 31.035203456878662
+Job Status: job has successfully run
+Simulation time: 31.11216926574707
+Job Status: job has successfully run
+Simulation time: 33.3321533203125
+[0.1, 0.9] tensor([[0.8200]]) 0.7138671875 0.74658203125 0.7364501953125 0.7706298828125
+[0.2, 0.8] start
+Job Status: job has successfully run
+Simulation time: 31.507869005203247
+Job Status: job has successfully run
+Simulation time: 33.472052574157715
+Job Status: job has successfully run
+Simulation time: 33.55717921257019
+Job Status: job has successfully run
+Simulation time: 33.25291204452515
+[0.2, 0.8] tensor([[0.6800]]) 0.579345703125 0.6177978515625 0.6263427734375 0.6591796875
+[0.3, 0.7] start
+Job Status: job has successfully run
+Simulation time: 35.49285912513733
+Job Status: job has successfully run
+Simulation time: 31.123299837112427
+Job Status: job has successfully run
+Simulation time: 33.00395321846008
+Job Status: job has successfully run
+Simulation time: 33.117045640945435
+[0.3, 0.7] tensor([[0.5800]]) 0.5631103515625 0.5279541015625 0.54443359375 0.5423583984375
+[0.4, 0.6] start
+Job Status: job has successfully run
+Simulation time: 30.993489027023315
+Job Status: job has successfully run
+Simulation time: 33.220943212509155
+Job Status: job has successfully run
+Simulation time: 31.01398015022278
+Job Status: job has successfully run
+Simulation time: 33.82949376106262
+[0.4, 0.6] tensor([[0.5200]]) 0.467041015625 0.4654541015625 0.493896484375 0.4959716796875
+[0.5, 0.5] start
+Job Status: job has successfully run
+Simulation time: 33.52845096588135
+Job Status: job has successfully run
+Simulation time: 33.21038293838501
+Job Status: job has successfully run
+Simulation time: 30.95868730545044
+Job Status: job has successfully run
+Simulation time: 33.060133934020996
+[0.5, 0.5] tensor([[0.5000]]) 0.4752197265625 0.4530029296875 0.4749755859375 0.4874267578125
+[0.6, 0.4] start
+Job Status: job has successfully run
+Simulation time: 33.102232933044434
+Job Status: job has successfully run
+Simulation time: 36.76577663421631
+Job Status: job has successfully run
+Simulation time: 33.38919281959534
+Job Status: job has successfully run
+Simulation time: 33.201558113098145
+[0.6, 0.4] tensor([[0.5200]]) 0.4901123046875 0.4564208984375 0.5040283203125 0.5042724609375
+[0.7, 0.3] start
+Job Status: job has successfully run
+Simulation time: 33.43489170074463
+Job Status: job has successfully run
+Simulation time: 31.120949506759644
+Job Status: job has successfully run
+Simulation time: 31.038543939590454
+Job Status: job has successfully run
+Simulation time: 31.28555727005005
+[0.7, 0.3] tensor([[0.5800]]) 0.5321044921875 0.4932861328125 0.5780029296875 0.55419921875
+[0.8, 0.2] start
+Job Status: job has successfully run
+Simulation time: 34.18139433860779
+Job Status: job has successfully run
+Simulation time: 34.14239311218262
+Job Status: job has successfully run
+Simulation time: 31.496391773223877
+Job Status: job has successfully run
+Simulation time: 33.741252422332764
+[0.8, 0.2] tensor([[0.6800]]) 0.5863037109375 0.5897216796875 0.6690673828125 0.6478271484375
+[0.9, 0.1] start
+Job Status: job has successfully run
+Simulation time: 31.415033102035522
+Job Status: job has successfully run
+Simulation time: 33.679006576538086
+Job Status: job has successfully run
+Simulation time: 34.08073306083679
+Job Status: job has successfully run
+Simulation time: 34.17023158073425
+[0.9, 0.1] tensor([[0.8200]]) 0.714111328125 0.735107421875 0.7935791015625 0.782470703125
+[1.0, 0.0] start
+Job Status: job has successfully run
+Simulation time: 36.62601447105408
+Job Status: job has successfully run
+Simulation time: 33.33830666542053
+Job Status: job has successfully run
+Simulation time: 30.824734210968018
+Job Status: job has successfully run
+Simulation time: 33.28841519355774
+[1.0, 0.0] tensor([[1.]]) 0.86962890625 0.9024658203125 0.92236328125 0.9495849609375
+
+Process finished with exit code 0
+

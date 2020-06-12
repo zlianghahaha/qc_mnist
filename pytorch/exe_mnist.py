@@ -102,7 +102,7 @@ def load_data(interest_num):
     train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
                                                num_workers=num_workers, shuffle=True, drop_last=True)
     test_loader = torch.utils.data.DataLoader(test_data, batch_size=inference_batch_size,
-                                              num_workers=num_workers, shuffle=True, drop_last=True)
+                                              num_workers=num_workers, shuffle=False, drop_last=True)
 
     return train_loader,test_loader
 
@@ -303,16 +303,18 @@ if __name__ == "__main__":
         #     else:
         #         print(name, para)
         # print("="*100)
-        test(interest_class,criterion,test_loader,debug)
+        # test(interest_class,criterion,test_loader,debug)
         # correct = 0
         # qc_correct = 0
-        # test_idx = 0
-        # for data, target in test_loader:
-        #     if test_idx < sim_range[0] or test_idx >= sim_range[1]:
-        #         test_idx += 1
-        #         continue
-        #     target, new_target = modify_target(target, interest_class)
-        #
+        test_idx = 0
+        for data, target in test_loader:
+            # if test_idx < sim_range[0] or test_idx >= sim_range[1]:
+            #     test_idx += 1
+            #     continue
+            target, new_target = modify_target(target, interest_class)
+            print(test_idx, target.item())
+            test_idx += 1
+
         #     start = time.time()
         #     output = model(data, False)
         #     end = time.time()
