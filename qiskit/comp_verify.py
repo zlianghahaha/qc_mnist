@@ -67,7 +67,8 @@ def fire_ibmq(circuit, shots, iter, Simulation=False, printable=True, backend_na
                           coupling_map=coupling_map,
                           noise_model=noise_model,
                           basis_gates=basis_gates,
-                          initial_layout=mapping)
+                          initial_layout=mapping,
+                          shots=shots)
         elif len(mapping.keys()) != 0:
             job_ibm_q = execute(circuit, backend, shots=shots, initial_layout=mapping)
         else:
