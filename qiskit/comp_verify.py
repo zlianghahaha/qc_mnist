@@ -66,7 +66,8 @@ def fire_ibmq(circuit, shots, iter, Simulation=False, printable=True, backend_na
             job_ibm_q = execute(circuit, backend,
                           coupling_map=coupling_map,
                           noise_model=noise_model,
-                          basis_gates=basis_gates)
+                          basis_gates=basis_gates,
+                          initial_layout=mapping)
         elif len(mapping.keys()) != 0:
             job_ibm_q = execute(circuit, backend, shots=shots, initial_layout=mapping)
         else:
@@ -220,7 +221,7 @@ def opt_3_design(input, w):
 
     circuit.barrier()
     circuit.measure(q_io[0], c)
-    mapping = {q_io[0]: 4}
+    mapping = {q_io[0]: 0}
 
     return circuit, mapping
 
@@ -277,7 +278,7 @@ for i in range(11):
 
     #
     #
-    counts = fire_ibmq(opt3_circuit, qc_shots, 1, True, False)
+    counts = fire_ibmq(opt3_circuit, qc_shots, 1, True, False,mapping=opt3_mapping)
     (mycount, bits) = analyze(counts[0])
     for b in range(bits):
         sim_res = float(mycount[b]) / qc_shots
