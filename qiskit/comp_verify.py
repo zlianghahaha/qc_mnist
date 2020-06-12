@@ -218,7 +218,7 @@ def opt_3_design(input, w):
 
     circuit.barrier()
     circuit.measure(q_io[0], c)
-    mapping = {q_io[0]: 4}
+    mapping = {q_io[0]: 2}
 
     return circuit, mapping
 
@@ -283,14 +283,14 @@ for i in range(11):
         # results[tuple(input_ori)].append(sim_res)
         print("qiskit_sim without noisy", sim_res)
 
-    counts = fire_ibmq(opt3_circuit, qc_shots, 1, run_model=1, printable=False, backend_name='ibmq_armonk', mapping=opt3_mapping)
+    counts = fire_ibmq(opt3_circuit, qc_shots, 1, run_model=1, printable=False, backend_name='ibmq_ourense', mapping=opt3_mapping)
     (mycount, bits) = analyze(counts[0])
     for b in range(bits):
         sim_res = float(mycount[b]) / qc_shots
         # results[tuple(input_ori)].append(sim_res)
         print("qiskit_sim with noisy",sim_res)
 
-    counts = fire_ibmq(opt3_circuit, qc_shots, 1, run_model=2, printable=False, backend_name="ibmq_armonk", mapping=opt3_mapping)
+    counts = fire_ibmq(opt3_circuit, qc_shots, 1, run_model=2, printable=False, backend_name="ibmq_ourense", mapping=opt3_mapping)
     (mycount, bits) = analyze(counts[0])
     for b in range(bits):
         opt3_res = float(mycount[b]) / qc_shots
