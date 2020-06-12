@@ -63,7 +63,7 @@ def fire_ibmq(circuit, shots, iter, Simulation=False, printable=True, backend_na
             backend = Aer.get_backend('qasm_simulator')
 
         if Simulation:
-            job = execute(circuit, backend,
+            job_ibm_q = execute(circuit, backend,
                           coupling_map=coupling_map,
                           noise_model=noise_model,
                           basis_gates=basis_gates)
