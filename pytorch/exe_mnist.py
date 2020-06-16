@@ -161,7 +161,8 @@ if __name__ == "__main__":
     # print(args.device)
 
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    device = torch.device("cpu")
+    # device = torch.device("cpu")
+    device = args.device
     interest_class = [int(x.strip()) for x in args.interest_class.split(",")]
     img_size = int(args.img_size)
     num_workers = int(args.num_workers)
