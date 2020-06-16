@@ -42,7 +42,7 @@ def train(epoch,interest_num,criterion,train_loader):
 
         optimizer.step()
 
-        if batch_idx % 10 == 0:
+        if batch_idx % 500 == 0:
             logger.info('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tAccuracy: {}/{} ({:.2f}%)'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                        100. * batch_idx / len(train_loader), loss, correct, (batch_idx + 1) * len(data),
