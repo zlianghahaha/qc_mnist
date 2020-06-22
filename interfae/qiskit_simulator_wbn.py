@@ -190,8 +190,8 @@ def simulate_one_step(I, W, qca_x_running_rot, qca_x_l_0_5, qc_x_running_rot, te
         for idx in range(len(W2)):
             circuit.measure(q_qc_out[idx], c[idx])
 
-    # print(circuit)
-    # sys.exit(0)
+    print(circuit)
+    sys.exit(0)
     qc_shots = 8192
     num_c_reg = 1
 
