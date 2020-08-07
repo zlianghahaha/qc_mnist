@@ -22,13 +22,27 @@ logging.basicConfig(stream=sys.stdout,
 logger = logging.getLogger(__name__)
 
 
+class ToQuantumData_Batch(object):
+    def __call__(self, tensor):
+        data = tensor
+        input_vec = data.view(-1)
+        vec_len = input_vec.size()[0]
+        input_matrix = torch.zeros(vec_len,vec_len)
+        input_matrix[0] = input_vec
+        input_matrix = input_matrix.transpose(0,1)
+        u,s,v = np.linalg.svd(input_matrix)
+        output_matrix = torch.tensor(np.dot(u,v))
+        output_data = output_matrix[:,0].view(data.shape)
+        return output_data
+
+
 def train(epoch,interest_num,criterion,train_loader):
     model.train()
     correct = 0
     epoch_loss = []
     for batch_idx, (data, target) in enumerate(train_loader):
         target, new_target = modify_target(target,interest_num)
-
+        data = ToQuantumData_Batch()(data)
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data, True)
@@ -55,24 +69,32 @@ def train(epoch,interest_num,criterion,train_loader):
     logger.info("Training Set: Average loss: {}".format(round(sum(epoch_loss) / len(epoch_loss), 6)))
 
 
-accur = []
 
+
+accur = []
 
 def test(interest_num,criterion,test_loader,debug=False):
     model.eval()
     test_loss = 0
     correct = 0
     for data, target in test_loader:
+
+        data = ToQuantumData_Batch()(data)
         target, new_target = modify_target(target,interest_num)
+
+        if debug:
+            print(data,target,new_target)
+
 
         data, target = data.to(device), target.to(device)
         if debug:
             start = time.time()
         output = model(data, False)
+
         if debug:
             end = time.time()
             print("Time",end - start)
-            # sys.exit(0)
+            sys.exit(0)
         test_loss += criterion(output, target)  # sum up batch loss
         pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
@@ -87,17 +109,35 @@ def test(interest_num,criterion,test_loader,debug=False):
     return float(correct) / len(test_loader.dataset)
 
 
+class ToQuantumData(object):
+    def __call__(self, tensor):
+        data = tensor
+        input_vec = data.view(-1)
+        vec_len = input_vec.size()[0]
+        input_matrix = torch.zeros(vec_len, vec_len)
+        input_matrix[0] = input_vec
+        input_matrix = input_matrix.transpose(0, 1)
+        u, s, v = np.linalg.svd(input_matrix)
+        output_matrix = torch.tensor(np.dot(u, v))
+        # print(output_matrix)
+        output_data = output_matrix[:, 0].view(1, img_size, img_size)
+        return output_data
+
 
 
 def load_data(interest_num):
     # convert data to torch.FloatTensor
     transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
+    # transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
+
+    transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
+
     # transform = transforms.Compose([transforms.Resize((img_size,img_size)),transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
     # choose the training and test datasets
-    train_data = datasets.MNIST(root='data', train=True,
+    train_data = datasets.MNIST(root='../pytorch/data', train=True,
                                 download=True, transform=transform)
-    test_data = datasets.MNIST(root='data', train=False,
-                               download=True, transform=transform)
+    test_data = datasets.MNIST(root='../pytorch/data', train=False,
+                               download=True, transform=transform_inference)
 
     train_data = select_num(train_data, interest_num)
     test_data = select_num(test_data, interest_num)
@@ -106,7 +146,7 @@ def load_data(interest_num):
     train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
                                                num_workers=num_workers, shuffle=True, drop_last=True)
     test_loader = torch.utils.data.DataLoader(test_data, batch_size=inference_batch_size,
-                                              num_workers=num_workers, shuffle=False, drop_last=True)
+                                              num_workers=num_workers, shuffle=True, drop_last=True)
 
     return train_loader,test_loader
 
@@ -129,6 +169,7 @@ def parse_args():
     parser.add_argument('-bin', "--binary", help="binary activation", action="store_true", )
 
 
+
     # QC related
     parser.add_argument('-nq', "--classic", help="classic computing test", action="store_true", )
     parser.add_argument('-wn', "--with_norm", help="Using Batchnorm", action="store_true", )
@@ -147,6 +188,8 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+    # path ="./model/exe_mnist.py_2020_08_04-18_40_38/checkpoint_8_0.9573.pth.tar"
+    # path ="./model/exe_mnist.py_2020_08_07-02_52_57/checkpoint_0_0.8953.pth.tar"
 
 if __name__ == "__main__":
     print("=" * 100)
@@ -223,13 +266,17 @@ if __name__ == "__main__":
     if with_norm and train_ang:
         para_list = []
         for idx in range(len(layers)):
-            fc = getattr(model, "fc"+str(idx))
-            qc = getattr(model, "qc"+str(idx))
+            fc = getattr(model, "fc" + str(idx))
             para_list.append({'params': fc.parameters(), 'lr': init_lr})
+
+            # if idx==0:
+            #     continue
+            qc = getattr(model, "qc"+str(idx))
             para_list.append({'params': qc.parameters(), 'lr': init_qc_lr})
         optimizer = torch.optim.Adam(para_list)
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=init_lr)
+
 
 
 
@@ -300,25 +347,25 @@ if __name__ == "__main__":
             print("=" * 60)
             print()
     else:
-        # print("=" * 20, max_epoch, "Testing", "=" * 20)
-        # print("=" * 100)
-        # for name, para in model.named_parameters():
-        #     if "fc" in name:
-        #         print(name,binarize(para))
-        #     else:
-        #         print(name, para)
-        # print("="*100)
-        # test(interest_class,criterion,test_loader,debug)
+        print("=" * 20, max_epoch, "Testing", "=" * 20)
+        print("=" * 100)
+        for name, para in model.named_parameters():
+            if "fc" in name:
+                print(name,binarize(para))
+            else:
+                print(name, para)
+        print("="*100)
+        test(interest_class,criterion,test_loader,debug)
         # correct = 0
         # qc_correct = 0
-        test_idx = 0
-        for data, target in test_loader:
-            # if test_idx < sim_range[0] or test_idx >= sim_range[1]:
-            #     test_idx += 1
-            #     continue
-            target, new_target = modify_target(target, interest_class)
-            print(test_idx, target.item())
-            test_idx += 1
+        # test_idx = 0
+        # for data, target in test_loader:
+        #     # if test_idx < sim_range[0] or test_idx >= sim_range[1]:
+        #     #     test_idx += 1
+        #     #     continue
+        #     target, new_target = modify_target(target, interest_class)
+        #     print(test_idx, target.item())
+        #     test_idx += 1
 
         #     start = time.time()
         #     output = model(data, False)
