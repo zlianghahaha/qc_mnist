@@ -275,41 +275,6 @@ def extract_model(model):
                                                                                          second_layer_addition_q)
 
 
-# Main part
-
-ATOL_DEFAULT = 1e-8
-RTOL_DEFAULT = 1e-5
-def is_identity_matrix(mat,
-                       ignore_phase=False,
-                       rtol=RTOL_DEFAULT,
-                       atol=ATOL_DEFAULT):
-    """Test if an array is an identity matrix."""
-    if atol is None:
-        atol = ATOL_DEFAULT
-    if rtol is None:
-        rtol = RTOL_DEFAULT
-    mat = np.array(mat)
-    if mat.ndim != 2:
-        return False
-    if ignore_phase:
-        # If the matrix is equal to an identity up to a phase, we can
-        # remove the phase by multiplying each entry by the complex
-        # conjugate of the phase of the [0, 0] entry.
-        theta = np.angle(mat[0, 0])
-        mat = np.exp(-1j * theta) * mat
-    # Check if square identity
-    iden = np.eye(len(mat))
-    return np.allclose(mat, iden, rtol=rtol, atol=atol)
-
-
-def is_unitary_matrix(mat, rtol=RTOL_DEFAULT, atol=ATOL_DEFAULT):
-    """Test if an array is a unitary matrix."""
-    mat = np.array(mat)
-    # Compute A^dagger.A and see if it is identity matrix
-    mat = np.conj(mat.T).dot(mat)
-    return is_identity_matrix(mat, ignore_phase=False, rtol=rtol, atol=atol)
-
-
 
 def q_map_neural_compute_body(circ, inputs, iq, aux_qr, inference_batch_size, log_batch_size, weights,Q_InputMatrix):
     quantum_gates, ret_index = qf_map_extract_from_weight(weights)
@@ -444,8 +409,25 @@ def q_map_q_ori_net(circ, s_qr_in, s_qr_enc, aux_qr, weights):
                 circ.x(s_qr_in[i])
 
     elif len(weights) == 8:
-        print("Size", len(weights), "in 2nd layer is now not supportted")
-        sys.exit(0)
+        for i in range(len(weights)):
+            if weights[i] == -1:
+                circ.x(s_qr_in[i])
+        for i in range(3):
+            circ.h(s_qr_enc[i])
+        circ.barrier()
+
+        flag = "03b"
+        for i in range(8):
+            binstr_cur_num = format(i, flag)
+            # print(binstr_cur_num)
+            for j in range(len(binstr_cur_num)):
+                if binstr_cur_num[j] == "0":
+                    circ.x(s_qr_enc[j])
+            cccz(circ, s_qr_in[8 - i - 1], s_qr_enc[0], s_qr_enc[1], s_qr_enc[2], aux_qr[0], aux_qr[1])
+            for j in range(len(binstr_cur_num)):
+                if binstr_cur_num[j] == "0":
+                    circ.x(s_qr_enc[j])
+            circ.barrier()
     else:
         print("Size", len(weights), "in 2nd layer is now not supportted")
         sys.exit(0)
@@ -642,7 +624,7 @@ def fire_ibmq(circuit, shots, iter, Simulation=False, printable=True, backend_na
 
     return count_set
 
-def simulation_36(iq,nn_prop,bn_prop,Q_InputMatrix):
+def simulation_136(iq,nn_prop,bn_prop,Q_InputMatrix):
     inference_batch_size = 1
     log_batch_size =0
 
@@ -666,122 +648,76 @@ def simulation_36(iq,nn_prop,bn_prop,Q_InputMatrix):
         (mycount, bits) = analyze(counts[0])
         for b in range(bits):
             FLayer_Res.append(float(mycount[b]) / qc_shots)
+
     print(FLayer_Res)
 
     # %%
 
-
-    s_qr_in = QuantumRegister(4, "s_in")
-    s_qr_enc = QuantumRegister(4, "s_encoder")
-    s_qr_out = QuantumRegister(2, "s_out")
-    aux_qr = QuantumRegister(1, "aux")
-    c = ClassicalRegister(2, "reg")
-
-    circ = QuantumCircuit(s_qr_in, s_qr_enc, s_qr_out, aux_qr, c)
-    for i in range(len(FLayer_Res)):
-        ang = 2 * torch.tensor(math.sqrt(FLayer_Res[i])).asin().item()
-        circ.ry(ang, s_qr_in[i])
-
-    # Build the computation of original neural comp
-    enc_len = int(math.log(nn_prop[1][0], 2))
-    for i in range(nn_prop[1][1]):
-        q_map_q_ori_net(circ, s_qr_in, s_qr_enc[enc_len * i:enc_len * (i + 1)], aux_qr, nn_prop[1][2][i])
-        circ.barrier()
-    circ.barrier()
-
-    circ.h(s_qr_enc[0])
-    circ.x(s_qr_enc[0])
-    circ.h(s_qr_enc[1])
-    circ.x(s_qr_enc[1])
-    circ.ccx(s_qr_enc[0], s_qr_enc[1], s_qr_out[0])
-
-    circ.barrier()
-    circ.h(s_qr_enc[2])
-    circ.x(s_qr_enc[2])
-    circ.h(s_qr_enc[3])
-    circ.x(s_qr_enc[3])
-    circ.ccx(s_qr_enc[2], s_qr_enc[3], s_qr_out[1])
-    circ.barrier()
-
-    circ.measure(s_qr_out[0], c[0])
-    circ.measure(s_qr_out[1], c[1])
+    s_qr_in = QuantumRegister(8, "s_in")
+    s_qr_enc = QuantumRegister(3, "s_encoder")
+    s_qr_tmp = QuantumRegister(1, "s_tmp")
+    s_qr_bat = QuantumRegister(1, "s_bn")
+    s_qr_out = QuantumRegister(1, "s_out")
+    aux_qr = QuantumRegister(2, "aux")
+    c = ClassicalRegister(1, "reg")
 
     SLayer_Res = []
-    iters = 1
-    qc_shots = 8192
-    counts = fire_ibmq(circ, qc_shots, iters, True, False)
-    (mycount, bits) = analyze(counts[0])
-    for b in range(bits):
-        SLayer_Res.append(float(mycount[b]) / qc_shots)
+
+    for idx in range(nn_prop[1][1]):
+
+        circ = QuantumCircuit(s_qr_in, s_qr_enc, s_qr_tmp, s_qr_bat, s_qr_out, aux_qr, c)
+        for i in range(len(FLayer_Res)):
+            ang = 2 * torch.tensor(math.sqrt(FLayer_Res[i])).asin().item()
+            circ.ry(ang, s_qr_in[i])
+
+        # Build the computation of original neural comp
+        q_map_q_ori_net(circ, s_qr_in, s_qr_enc[0:3], aux_qr, nn_prop[1][2][idx])
+
+        circ.h(s_qr_enc[0])
+        circ.x(s_qr_enc[0])
+        circ.h(s_qr_enc[1])
+        circ.x(s_qr_enc[1])
+        circ.h(s_qr_enc[2])
+        circ.x(s_qr_enc[2])
+        cccx(circ, s_qr_enc[0], s_qr_enc[1], s_qr_enc[2], s_qr_tmp, aux_qr[0])
+        circ.barrier()
+
+        if bn_prop[1]['x_l_0_5'][idx] == 0:
+            # upward
+            val = bn_prop[1]['x_running_rot'][idx]
+            qc_ang = 2 * torch.tensor(math.sqrt(val)).asin().item()
+            circ.ry(qc_ang, s_qr_bat)
+            circ.ccx(s_qr_tmp, s_qr_bat, s_qr_out)
+        else:
+            # downward
+            val = bn_prop[1]['x_running_rot'][idx]
+            qc_ang = 2 * torch.tensor(math.sqrt(val)).asin().item()
+            circ.ry(qc_ang, s_qr_bat)
+            circ.cx(s_qr_tmp, s_qr_out)
+            circ.x(s_qr_tmp)
+            circ.ccx(s_qr_tmp, s_qr_bat, s_qr_out)
+
+        circ.measure(s_qr_out, c)
+
+        iters = 1
+        qc_shots = 8192
+        counts = fire_ibmq(circ, qc_shots, iters, True, False)
+        (mycount, bits) = analyze(counts[0])
+        for b in range(bits):
+            SLayer_Res.append(float(mycount[b]) / qc_shots)
 
     print(SLayer_Res)
 
-    # %%
-
-    s_qr_in = QuantumRegister(2, "s_in")
-    s_qr_bat = QuantumRegister(2, "s_BN")
-    s_qr_out = QuantumRegister(2, "s_out")
-    c = ClassicalRegister(2, "reg")
-
-    circ = QuantumCircuit(s_qr_in, s_qr_bat, s_qr_out, c)
-
-    for i in range(len(SLayer_Res)):
-        ang = 2 * torch.tensor(math.sqrt(SLayer_Res[i])).asin().item()
-        circ.ry(ang, s_qr_in[i])
-
-    if bn_prop[1]['x_l_0_5'][0] == 0:
-        # upward
-        val = bn_prop[1]['x_running_rot'][0]
-        qc_ang = 2 * torch.tensor(math.sqrt(val)).asin().item()
-        circ.ry(qc_ang, s_qr_bat[0])
-        circ.ccx(s_qr_in[0], s_qr_bat[0], s_qr_out[0])
-    else:
-        # downward
-        val = bn_prop[1]['x_running_rot'][0]
-        qc_ang = 2 * torch.tensor(math.sqrt(val)).asin().item()
-        circ.ry(qc_ang, s_qr_bat[0])
-        circ.cx(s_qr_in[0], s_qr_out[0])
-        circ.x(s_qr_in[0])
-        circ.ccx(s_qr_in[0], s_qr_bat[0], s_qr_out[0])
-
-    circ.barrier()
-    if bn_prop[1]['x_l_0_5'][1] == 0:
-        val = bn_prop[1]['x_running_rot'][1]
-        qc_ang = 2 * torch.tensor(math.sqrt(val)).asin().item()
-        circ.ry(qc_ang, s_qr_bat[1])
-        circ.ccx(s_qr_in[1], s_qr_bat[1], s_qr_out[1])
-    else:
-        # downward
-        val = bn_prop[1]['x_running_rot'][1]
-        qc_ang = 2 * torch.tensor(math.sqrt(val)).asin().item()
-        circ.ry(qc_ang, s_qr_bat[1])
-        circ.cx(s_qr_in[1], s_qr_out[1])
-        circ.x(s_qr_in[1])
-        circ.ccx(s_qr_in[1], s_qr_bat[1], s_qr_out[1])
-
-    circ.measure(s_qr_out[0], c[0])
-    circ.measure(s_qr_out[1], c[1])
-
-    Final_Res = []
-
-    iters = 1
-    qc_shots = 8192
-    counts = fire_ibmq(circ, qc_shots, iters, True, False)
-    (mycount, bits) = analyze(counts[0])
-    for b in range(bits):
-        Final_Res.append(float(mycount[b]) / qc_shots)
-
-    print(Final_Res)
-    return torch.tensor([Final_Res])
+    return torch.tensor([SLayer_Res])
 
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='QuantumFlow Qiskit Simulation')
-    parser.add_argument('-c','--interest_class',default="3, 6",help="investigate classes",)
-    parser.add_argument('-s', '--segment', default="0, 1", help="test segment [3,6] 0->1968", )
-    parser.add_argument('-r', '--resume_path', default='mnist_36_0.9746.pth.tar', help='resume from checkpoint')
+    parser.add_argument('-c','--interest_class',default="1, 3, 6",help="investigate classes",)
+    parser.add_argument('-s', '--segment', default="0, 1", help="test segment [1,3,6] 0->1968", )
+    parser.add_argument('-r', '--resume_path', default='mnist_136_0.8775.pth.tar', help='resume from checkpoint')
     args = parser.parse_args()
 
 
@@ -797,7 +733,7 @@ if __name__ == "__main__":
     inference_batch_size = 1
 
     device = torch.device("cpu")
-    layers = [4, 2]
+    layers = [8, 3]
 
 
     print("="*100)
@@ -846,7 +782,7 @@ if __name__ == "__main__":
 
 
 
-    model = Net(img_size,layers,True,[[1,1,1,1],[1,1]],True,False,False,False,False).to(device)
+    model = Net(img_size,layers,True,[[1,1,1,1,1,1,1,1],[1,1,1]],True,False,False,False,False).to(device)
 
 
     print("=> loading checkpoint from '{}'<=".format(resume_path))
@@ -881,7 +817,7 @@ if __name__ == "__main__":
 
 
         Q_InputMatrix = ToQuantumMatrix()(data.flatten())
-        output = simulation_36(iq, nn_prop, bn_prop, Q_InputMatrix)
+        output = simulation_136(iq, nn_prop, bn_prop, Q_InputMatrix)
         pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
         print("=" * 10, "QC:", output)

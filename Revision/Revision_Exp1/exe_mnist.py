@@ -365,7 +365,13 @@ if __name__ == "__main__":
             else:
                 print(name, para)
         print("="*100)
-        test(interest_class,criterion,test_loader,debug)
+
+        q_start = time.time()
+        test(interest_class, criterion, test_loader, debug)
+        q_end = time.time()
+
+        print(q_start-q_end)
+
         # correct = 0
         # qc_correct = 0
         # test_idx = 0
