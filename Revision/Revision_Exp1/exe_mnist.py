@@ -131,7 +131,7 @@ class ToQuantumData(object):
 
 
 
-def load_data(interest_num):
+def load_data(interest_num,datapath):
     # convert data to torch.FloatTensor
     # transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
     transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
@@ -141,9 +141,9 @@ def load_data(interest_num):
 
     # transform = transforms.Compose([transforms.Resize((img_size,img_size)),transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
     # choose the training and test datasets
-    train_data = datasets.MNIST(root='../../pytorch/data', train=True,
+    train_data = datasets.MNIST(root=datapath, train=True,
                                 download=True, transform=transform)
-    test_data = datasets.MNIST(root='../../pytorch/data', train=False,
+    test_data = datasets.MNIST(root=datapath, train=False,
                                download=True, transform=transform_inference)
 
     train_data = select_num(train_data, interest_num)
@@ -164,6 +164,7 @@ def parse_args():
     parser.add_argument('--device', default='cuda', help='device')
     parser.add_argument('-c','--interest_class',default="3, 6",help="investigate classes",)
     parser.add_argument('-s','--img_size', default="4", help="image size 4: 4*4", )
+    parser.add_argument('-dp', '--datapath', default='../../pytorch/data', help='dataset')
     parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
     parser.add_argument('-tb','--batch_size', default="32", help="training batch size", )
     parser.add_argument('-ib','--inference_batch_size', default="32", help="inference batch size", )
@@ -211,6 +212,7 @@ if __name__ == "__main__":
 
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # device = torch.device("cpu")
+    datapath = args.datapath
     device = args.device
     interest_class = [int(x.strip()) for x in args.interest_class.split(",")]
     img_size = int(args.img_size)
@@ -265,7 +267,7 @@ if __name__ == "__main__":
 
     # Schedule train and test
 
-    train_loader, test_loader = load_data(interest_class)
+    train_loader, test_loader = load_data(interest_class,datapath)
     criterion = nn.CrossEntropyLoss()
     model = Net(img_size,layers,with_norm,given_ang,train_ang,training,binary,classic,debug)
     model = model.to(device)
