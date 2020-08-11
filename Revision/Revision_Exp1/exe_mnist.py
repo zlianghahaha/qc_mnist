@@ -44,8 +44,6 @@ def train(epoch,interest_num,criterion,train_loader):
         # data = ToQuantumData_Batch()(data)
         target, new_target = modify_target(target,interest_num)
 
-        print(device)
-
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data, True)
@@ -118,7 +116,8 @@ def test(interest_num,criterion,test_loader,debug=False):
 
 class ToQuantumData(object):
     def __call__(self, tensor):
-        data = tensor
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        data = tensor.to(device)
         input_vec = data.view(-1)
         vec_len = input_vec.size()[0]
         input_matrix = torch.zeros(vec_len, vec_len)
