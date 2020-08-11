@@ -12,7 +12,7 @@ from pathlib import Path
 import functools
 print = functools.partial(print, flush=True)
 import numpy as np
-
+import argparse
 
 from qiskit_library import *
 import torch
@@ -729,14 +729,25 @@ def simulation_36(iq,nn_prop,bn_prop,Q_InputMatrix):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='QuantumFlow Qiskit Simulation')
+    parser.add_argument('-c','--interest_class',default="3, 6",help="investigate classes",)
+    parser.add_argument('-s', '--segment', default="0, 1", help="test segment [3,6] 0->1968", )
+    args = parser.parse_args()
 
-    interest_num = [3,6]
+
+
+    interest_num = [int(x.strip()) for x in args.interest_class.split(",")]
+    segment = [int(x.strip()) for x in args.segment.split(",")]
     img_size = 4
     # number of subprocesses to use for data loading
     num_workers = 0
     # how many samples per batch to load
-    batch_size = 2
+    batch_size = 1
     inference_batch_size = 1
+
+    device = torch.device("cpu")
+    layers = [4, 2]
+
 
     print("="*100)
     print("Demo 3 on MNIST. This script is for batch of data generation.")
@@ -776,15 +787,13 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
                                                num_workers=num_workers, shuffle=True, drop_last=True)
     test_loader = torch.utils.data.DataLoader(test_data, batch_size=inference_batch_size,
-                                              num_workers=num_workers, shuffle=True, drop_last=True)
+                                              num_workers=num_workers, shuffle=False, drop_last=True)
 
 
 
     # Network Architecture: 2 layers and each layer contains 2 neurons
 
-    img_size = 4
-    device = torch.device("cpu")
-    layers = [4, 2]
+
 
     model = Net(img_size,layers,True,[[1,1,1,1],[1,1]],True,False,False,False,False).to(device)
 
@@ -808,6 +817,10 @@ if __name__ == "__main__":
 
     correct = 0
     for batch_idx, (data, target) in enumerate(test_loader):
+        if batch_idx<segment[0]:
+            continue
+        if batch_idx>=segment[1]:
+            break
         torch.set_printoptions(threshold=sys.maxsize)
         target, new_target = modify_target(target, interest_num)
         print("Iteration:", batch_idx,target)
@@ -816,22 +829,20 @@ if __name__ == "__main__":
         print("=" * 10, "Classic:", output)
 
 
-
         Q_InputMatrix = ToQuantumMatrix()(data.flatten())
         output = simulation_36(iq, nn_prop, bn_prop, Q_InputMatrix)
         pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
         print("=" * 10, "QC:", output)
+        print("="*10, "Correct num:",pred.eq(target.data.view_as(pred)).cpu().sum())
 
-
-        if batch_idx==5:
-            break
 
 
     a = 100. * correct / len(test_loader.dataset)
 
-    print('Test set: Accuracy: {}/{} ({:.2f}%)'.format(correct, len(test_loader.dataset),
-        100. * float(correct) / float(len(test_loader.dataset))))
+    print('Test set: Accuracy: {}/{} ({:.2f}%)'.format(correct, segment[1]-segment[0],
+        100. * float(correct) / float(segment[1]-segment[0])))
 
     print(output)
 
+    print("\tEnd at:", time.strftime("%m/%d/%Y %H:%M:%S"))
