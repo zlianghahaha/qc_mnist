@@ -44,6 +44,7 @@ def train(epoch,interest_num,criterion,train_loader):
         # data = ToQuantumData_Batch()(data)
         target, new_target = modify_target(target,interest_num)
 
+        print(device)
 
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
@@ -267,9 +268,10 @@ if __name__ == "__main__":
 
     train_loader, test_loader = load_data(interest_class)
     criterion = nn.CrossEntropyLoss()
-    model = Net(img_size,layers,with_norm,given_ang,train_ang,training,binary,classic,debug).to(device)
+    model = Net(img_size,layers,with_norm,given_ang,train_ang,training,binary,classic,debug)\
+    model = model.to(device)
 
-    print(model)
+    print(device)
 
 
     if with_norm and train_ang:
