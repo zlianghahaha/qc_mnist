@@ -133,11 +133,11 @@ class ToQuantumData(object):
 
 def load_data(interest_num,datapath):
     # convert data to torch.FloatTensor
-    # transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
-    transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
+    transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
+    # transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
 
-    # transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
-    transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
+    transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
+    # transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
 
     # transform = transforms.Compose([transforms.Resize((img_size,img_size)),transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
     # choose the training and test datasets
