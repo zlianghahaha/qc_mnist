@@ -29,8 +29,8 @@ from tqdm import tqdm
 
 from qiskit import IBMQ
 # IBMQ.delete_accounts()
-IBMQ.save_account('62d0e14364f490e45b5b5e0f6eebdbc083270ffffb660c7054219b15c7ce99ab4aa3b321309c0a9d0c3fc20086baece1376297dcdb67c7b715f9de1e4fa79efb')
-IBMQ.load_account()
+# IBMQ.save_account('62d0e14364f490e45b5b5e0f6eebdbc083270ffffb660c7054219b15c7ce99ab4aa3b321309c0a9d0c3fc20086baece1376297dcdb67c7b715f9de1e4fa79efb')
+# IBMQ.load_account()
 
 
 from lib_qc import *
