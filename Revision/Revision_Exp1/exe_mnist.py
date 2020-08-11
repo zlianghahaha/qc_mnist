@@ -268,7 +268,7 @@ if __name__ == "__main__":
 
     train_loader, test_loader = load_data(interest_class)
     criterion = nn.CrossEntropyLoss()
-    model = Net(img_size,layers,with_norm,given_ang,train_ang,training,binary,classic,debug)\
+    model = Net(img_size,layers,with_norm,given_ang,train_ang,training,binary,classic,debug)
     model = model.to(device)
 
     print(device)
