@@ -41,7 +41,7 @@ def train(epoch,interest_num,criterion,train_loader):
     correct = 0
     epoch_loss = []
     for batch_idx, (data, target) in enumerate(train_loader):
-        data = ToQuantumData_Batch()(data)
+        # data = ToQuantumData_Batch()(data)
         target, new_target = modify_target(target,interest_num)
 
 
@@ -58,7 +58,7 @@ def train(epoch,interest_num,criterion,train_loader):
 
         optimizer.step()
 
-        if batch_idx % 20 == 0:
+        if batch_idx % 100 == 0:
             logger.info('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tAccuracy: {}/{} ({:.2f}%)'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                        100. * batch_idx / len(train_loader), loss, correct, (batch_idx + 1) * len(data),
@@ -83,7 +83,7 @@ def test(interest_num,criterion,test_loader,debug=False):
             print("="*5,"Before Unitray","="*5)
             print(data,target)
 
-        data = ToQuantumData_Batch()(data)
+        # data = ToQuantumData_Batch()(data)
         target, new_target = modify_target(target,interest_num)
 
         if debug:
@@ -133,10 +133,11 @@ class ToQuantumData(object):
 
 def load_data(interest_num):
     # convert data to torch.FloatTensor
-    transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
-    # transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
+    # transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
+    transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
 
-    transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
+    # transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
+    transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
 
     # transform = transforms.Compose([transforms.Resize((img_size,img_size)),transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
     # choose the training and test datasets
@@ -235,12 +236,15 @@ if __name__ == "__main__":
 
     train_ang = args.train_ang
 
+
+
     save_chkp = args.save_chkp
     if save_chkp:
         save_path = "./model/" + os.path.basename(sys.argv[0]) + "_" + time.strftime("%Y_%m_%d-%H_%M_%S")
         Path(save_path).mkdir(parents=True, exist_ok=True)
 
         logger.info("Checkpoint path: {}".format(save_path))
+        print(("Checkpoint path: {}".format(save_path)))
 
     if save_chkp:
         fh = open(save_path+"/config","w")
@@ -285,12 +289,14 @@ if __name__ == "__main__":
 
 
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones, gamma=0.1)
+    print(resume_path,os.path.isfile(resume_path))
 
     if os.path.isfile(resume_path):
         print("=> loading checkpoint from '{}'<=".format(resume_path))
         checkpoint = torch.load(resume_path, map_location=device)
         epoch_init, acc = checkpoint["epoch"], checkpoint["acc"]
         model.load_state_dict(checkpoint["state_dict"])
+
 
         scheduler.load_state_dict(checkpoint["scheduler"])
         scheduler.milestones = Counter(milestones)
