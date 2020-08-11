@@ -1,0 +1,167 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Loading pytorch/1.1.0
+  Loading requirement: cuda/10.0 cudnn/7.4
+/afs/crc.nd.edu/user/w/wjiang2/.local/lib/python3.7/site-packages/qiskit/providers/ibmq/credentials/configrc.py:130: UserWarning: Credentials already present. Set overwrite=True to overwrite.
+  warnings.warn('Credentials already present. '
+====================================================================================================
+Demo 3 on MNIST. This script is for batch of data generation.
+	Start at: 08/11/2020 02:08:23
+	Problems and issues, please contact Dr. Weiwen Jiang (wjiang2@nd.edu)
+	Enjoy and Good Luck!
+====================================================================================================
+
+=> loading checkpoint from 'mnist36_0.9746.pth.tar'<=
+fc0.weight tensor([[-1.,  1., -1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1., -1.,  1.,  1.,
+          1.,  1.],
+        [ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1., -1.,  1.,  1.,  1.,  1.,
+          1.,  1.],
+        [ 1., -1., -1., -1., -1., -1.,  1., -1., -1., -1., -1., -1.,  1.,  1.,
+         -1.,  1.],
+        [-1., -1., -1., -1.,  1., -1., -1., -1., -1., -1., -1.,  1.,  1.,  1.,
+          1.,  1.]], grad_fn=<BinarizeFBackward>)
+fc1.weight tensor([[-1.,  1., -1., -1.],
+        [ 1.,  1., -1.,  1.]], grad_fn=<BinarizeFBackward>)
+qca1.x_running_rot Parameter containing:
+tensor([0.2991, 0.3488])
+qca1.x_l_0_5 Parameter containing:
+tensor([1., 1.])
+qca1.x_g_0_5 Parameter containing:
+tensor([0., 0.])
+Iteration: 0 tensor([0])
+========== Classic: tensor([[0.5359, 0.4828]], grad_fn=<AddBackward0>)
+Job Status: job is actively runningJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+[0.30224609375, 0.371337890625, 0.168212890625, 0.0679931640625]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.32421875, 0.2061767578125]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.521484375, 0.4903564453125]
+========== QC: tensor([[0.5215, 0.4904]])
+========== Correct num: tensor(1)
+Iteration: 1 tensor([0])
+========== Classic: tensor([[0.5283, 0.4569]], grad_fn=<AddBackward0>)
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+[0.3275146484375, 0.3414306640625, 0.045166015625, 0.113037109375]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.3236083984375, 0.1639404296875]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.52197265625, 0.4583740234375]
+========== QC: tensor([[0.5220, 0.4584]])
+========== Correct num: tensor(1)
+Iteration: 2 tensor([0])
+========== Classic: tensor([[0.5203, 0.4747]], grad_fn=<AddBackward0>)
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+[0.353759765625, 0.353759765625, 0.141845703125, 0.083251953125]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.3153076171875, 0.192626953125]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.5225830078125, 0.4757080078125]
+========== QC: tensor([[0.5226, 0.4757]])
+========== Correct num: tensor(1)
+Iteration: 3 tensor([0])
+========== Classic: tensor([[0.4884, 0.4748]], grad_fn=<AddBackward0>)
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+[0.340087890625, 0.26708984375, 0.1142578125, 0.1697998046875]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.2662353515625, 0.2005615234375]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.475830078125, 0.4810791015625]
+========== QC: tensor([[0.4758, 0.4811]])
+========== Correct num: tensor(0)
+Iteration: 4 tensor([0])
+========== Classic: tensor([[0.5357, 0.4750]], grad_fn=<AddBackward0>)
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+[0.295654296875, 0.37060546875, 0.1376953125, 0.098388671875]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.340576171875, 0.2021484375]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.535888671875, 0.4827880859375]
+========== QC: tensor([[0.5359, 0.4828]])
+========== Correct num: tensor(1)
+Iteration: 5 tensor([0])
+========== Classic: tensor([[0.4767, 0.4625]], grad_fn=<AddBackward0>)
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+[0.31640625, 0.2208251953125, 0.0565185546875, 0.2025146484375]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.2510986328125, 0.18359375]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.472412109375, 0.46875]
+========== QC: tensor([[0.4724, 0.4688]])
+========== Correct num: tensor(1)
+Iteration: 6 tensor([0])
+========== Classic: tensor([[0.5014, 0.4672]], grad_fn=<AddBackward0>)
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+[0.3304443359375, 0.285400390625, 0.0819091796875, 0.144287109375]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.286376953125, 0.18310546875]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.5032958984375, 0.4619140625]
+========== QC: tensor([[0.5033, 0.4619]])
+========== Correct num: tensor(1)
+Iteration: 7 tensor([0])
+========== Classic: tensor([[0.5370, 0.4660]], grad_fn=<AddBackward0>)
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+[0.2913818359375, 0.3515625, 0.080322265625, 0.1116943359375]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.3345947265625, 0.1822509765625]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.5426025390625, 0.4644775390625]
+========== QC: tensor([[0.5426, 0.4645]])
+========== Correct num: tensor(1)
+Iteration: 8 tensor([0])
+========== Classic: tensor([[0.5309, 0.4823]], grad_fn=<AddBackward0>)
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+[0.3291015625, 0.3857421875, 0.1668701171875, 0.0906982421875]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.3350830078125, 0.2020263671875]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.540283203125, 0.4818115234375]
+========== QC: tensor([[0.5403, 0.4818]])
+========== Correct num: tensor(1)
+Iteration: 9 tensor([0])
+========== Classic: tensor([[0.5664, 0.4495]], grad_fn=<AddBackward0>)
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+[0.285400390625, 0.39208984375, 0.0321044921875, 0.083984375]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.3822021484375, 0.1495361328125]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.565185546875, 0.4376220703125]
+========== QC: tensor([[0.5652, 0.4376]])
+========== Correct num: tensor(1)
+Test set: Accuracy: 9/10 (90.00%)
+tensor([[0.5652, 0.4376]])
+	End at: 08/11/2020 02:13:28
+
+real	5m19.793s
+user	0m10.461s
+sys	0m1.713s

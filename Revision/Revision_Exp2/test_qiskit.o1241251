@@ -1,0 +1,57 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Loading pytorch/1.1.0
+  Loading requirement: cuda/10.0 cudnn/7.4
+====================================================================================================
+Demo 3 on MNIST. This script is for batch of data generation.
+	Start at: 08/11/2020 01:53:37
+	Problems and issues, please contact Dr. Weiwen Jiang (wjiang2@nd.edu)
+	Enjoy and Good Luck!
+====================================================================================================
+
+=> loading checkpoint from 'mnist36_0.9746.pth.tar'<=
+fc0.weight tensor([[-1.,  1., -1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1., -1.,  1.,  1.,
+          1.,  1.],
+        [ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1., -1.,  1.,  1.,  1.,  1.,
+          1.,  1.],
+        [ 1., -1., -1., -1., -1., -1.,  1., -1., -1., -1., -1., -1.,  1.,  1.,
+         -1.,  1.],
+        [-1., -1., -1., -1.,  1., -1., -1., -1., -1., -1., -1.,  1.,  1.,  1.,
+          1.,  1.]], grad_fn=<BinarizeFBackward>)
+fc1.weight tensor([[-1.,  1., -1., -1.],
+        [ 1.,  1., -1.,  1.]], grad_fn=<BinarizeFBackward>)
+qca1.x_running_rot Parameter containing:
+tensor([0.2991, 0.3488])
+qca1.x_l_0_5 Parameter containing:
+tensor([1., 1.])
+qca1.x_g_0_5 Parameter containing:
+tensor([0., 0.])
+Iteration: 0 tensor([0])
+========== Classic: tensor([[0.5359, 0.4828]], grad_fn=<AddBackward0>)
+Job Status: job is actively runningJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+[0.2860107421875, 0.35986328125, 0.1585693359375, 0.0673828125]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.3427734375, 0.1978759765625]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.5380859375, 0.4893798828125]
+========== QC: tensor([[0.5381, 0.4894]])
+Iteration: 1 tensor([0])
+========== Classic: tensor([[0.5283, 0.4569]], grad_fn=<AddBackward0>)
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+Job Status: job is being initializedJob Status: job has successfully run
+[0.336669921875, 0.337890625, 0.046875, 0.120361328125]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.326416015625, 0.1617431640625]
+Job Status: job is being initializedJob Status: job has successfully run
+[0.52978515625, 0.4554443359375]
+========== QC: tensor([[0.5298, 0.4554]])
+Test set: Accuracy: 2/3 (66.67%)
+tensor([[0.5298, 0.4554]])
+	End at: 08/11/2020 01:54:39
+/afs/crc.nd.edu/user/w/wjiang2/.local/lib/python3.7/site-packages/qiskit/providers/ibmq/credentials/configrc.py:130: UserWarning: Credentials already present. Set overwrite=True to overwrite.
+  warnings.warn('Credentials already present. '

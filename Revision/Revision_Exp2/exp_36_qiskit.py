@@ -193,9 +193,12 @@ def qf_map_extract_from_weight(weights):
     ret_index = list(range(len(fin_weig)))
 
     for k, v in map.items():
-        old_val = ret_index[k]
-        ret_index[k] = v
-        ret_index[v] = old_val
+        tmp1 = ret_index[k]
+        tmp2 = ret_index[v]
+        ret_index[k] = tmp2
+        ret_index[v] = tmp1
+
+
 
     return quantum_gates, ret_index
 
@@ -260,6 +263,39 @@ def extract_model(model):
 
 
 # Main part
+
+ATOL_DEFAULT = 1e-8
+RTOL_DEFAULT = 1e-5
+def is_identity_matrix(mat,
+                       ignore_phase=False,
+                       rtol=RTOL_DEFAULT,
+                       atol=ATOL_DEFAULT):
+    """Test if an array is an identity matrix."""
+    if atol is None:
+        atol = ATOL_DEFAULT
+    if rtol is None:
+        rtol = RTOL_DEFAULT
+    mat = np.array(mat)
+    if mat.ndim != 2:
+        return False
+    if ignore_phase:
+        # If the matrix is equal to an identity up to a phase, we can
+        # remove the phase by multiplying each entry by the complex
+        # conjugate of the phase of the [0, 0] entry.
+        theta = np.angle(mat[0, 0])
+        mat = np.exp(-1j * theta) * mat
+    # Check if square identity
+    iden = np.eye(len(mat))
+    return np.allclose(mat, iden, rtol=rtol, atol=atol)
+
+
+def is_unitary_matrix(mat, rtol=RTOL_DEFAULT, atol=ATOL_DEFAULT):
+    """Test if an array is a unitary matrix."""
+    mat = np.array(mat)
+    # Compute A^dagger.A and see if it is identity matrix
+    mat = np.conj(mat.T).dot(mat)
+    return is_identity_matrix(mat, ignore_phase=False, rtol=rtol, atol=atol)
+
 
 
 def q_map_neural_compute_body(circ, inputs, iq, aux_qr, inference_batch_size, log_batch_size, weights,Q_InputMatrix):
@@ -732,12 +768,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='QuantumFlow Qiskit Simulation')
     parser.add_argument('-c','--interest_class',default="3, 6",help="investigate classes",)
     parser.add_argument('-s', '--segment', default="0, 1", help="test segment [3,6] 0->1968", )
+    parser.add_argument('-r', '--resume_path', default='mnist36_0.9746.pth.tar', help='resume from checkpoint')
     args = parser.parse_args()
 
 
 
     interest_num = [int(x.strip()) for x in args.interest_class.split(",")]
     segment = [int(x.strip()) for x in args.segment.split(",")]
+    resume_path = args.resume_path
     img_size = 4
     # number of subprocesses to use for data loading
     num_workers = 0
@@ -797,7 +835,7 @@ if __name__ == "__main__":
 
     model = Net(img_size,layers,True,[[1,1,1,1],[1,1]],True,False,False,False,False).to(device)
 
-    resume_path="mnist36_0.9746.pth.tar"
+
     print("=> loading checkpoint from '{}'<=".format(resume_path))
     checkpoint = torch.load(resume_path, map_location=device)
     epoch_init, acc = checkpoint["epoch"], checkpoint["acc"]

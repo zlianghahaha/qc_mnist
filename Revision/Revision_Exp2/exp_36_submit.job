@@ -1,0 +1,13 @@
+#!/bin/bash
+#$ -M wjiang2@nd.edu     # Email address for job notification
+#$ -m abe               # Send mail when job begins, ends and aborts
+#$ -q debug              # Specify queue
+#$ -pe smp 12            # Specify number of cores to use.
+#$ -N exp_36_1680_1968        # Specify job name
+
+export OMP_NUM_THREADS=12
+
+module load python/3.7.3
+module load pytorch/1.1.0 
+
+time python -u exp_36_qiskit.py -s "1680, 1968" 
