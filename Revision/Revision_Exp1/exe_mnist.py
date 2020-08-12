@@ -14,7 +14,7 @@ from lib_model_summary import summary
 from collections import Counter
 from pathlib import Path
 # from qiskit_simulator_wbn import run_simulator
-
+from SelfMNIST import *
 import logging
 logging.basicConfig(stream=sys.stdout,
                     level=logging.WARNING,
@@ -131,20 +131,26 @@ class ToQuantumData(object):
 
 
 
-def load_data(interest_num,datapath):
-    # convert data to torch.FloatTensor
-    transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
-    # transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
+def load_data(interest_num,datapath,isppd,img_size):
 
-    transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
-    # transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
+    if isppd:
+        train_data = SelfMNIST(root=datapath,img_size=img_size, train=True)
+        test_data = SelfMNIST(root=datapath, img_size=img_size, train=False)
 
-    # transform = transforms.Compose([transforms.Resize((img_size,img_size)),transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
-    # choose the training and test datasets
-    train_data = datasets.MNIST(root=datapath, train=True,
-                                download=True, transform=transform)
-    test_data = datasets.MNIST(root=datapath, train=False,
-                               download=True, transform=transform_inference)
+    else:
+        # convert data to torch.FloatTensor
+        # transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
+        transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
+
+        # transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
+        transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
+
+        # transform = transforms.Compose([transforms.Resize((img_size,img_size)),transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
+        # choose the training and test datasets
+        train_data = datasets.MNIST(root=datapath, train=True,
+                                    download=True, transform=transform)
+        test_data = datasets.MNIST(root=datapath, train=False,
+                                   download=True, transform=transform_inference)
 
     train_data = select_num(train_data, interest_num)
     test_data = select_num(test_data, interest_num)
@@ -165,6 +171,7 @@ def parse_args():
     parser.add_argument('-c','--interest_class',default="3, 6",help="investigate classes",)
     parser.add_argument('-s','--img_size', default="4", help="image size 4: 4*4", )
     parser.add_argument('-dp', '--datapath', default='../../pytorch/data', help='dataset')
+    parser.add_argument('-ppd', "--preprocessdata", help="Using the preprocessed data", action="store_true", )
     parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
     parser.add_argument('-tb','--batch_size', default="32", help="training batch size", )
     parser.add_argument('-ib','--inference_batch_size', default="32", help="inference batch size", )
@@ -213,6 +220,7 @@ if __name__ == "__main__":
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # device = torch.device("cpu")
     datapath = args.datapath
+    isppd = args.preprocessdata
     device = args.device
     interest_class = [int(x.strip()) for x in args.interest_class.split(",")]
     img_size = int(args.img_size)
@@ -237,9 +245,6 @@ if __name__ == "__main__":
 
 
     train_ang = args.train_ang
-
-
-
     save_chkp = args.save_chkp
     if save_chkp:
         save_path = "./model/" + os.path.basename(sys.argv[0]) + "_" + time.strftime("%Y_%m_%d-%H_%M_%S")
@@ -267,7 +272,7 @@ if __name__ == "__main__":
 
     # Schedule train and test
 
-    train_loader, test_loader = load_data(interest_class,datapath)
+    train_loader, test_loader = load_data(interest_class,datapath,isppd,img_size)
     criterion = nn.CrossEntropyLoss()
     model = Net(img_size,layers,with_norm,given_ang,train_ang,training,binary,classic,debug)
     model = model.to(device)
