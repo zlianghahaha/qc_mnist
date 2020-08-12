@@ -16,13 +16,23 @@ class ToQuantumData(object):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         data = tensor.to(device)
         input_vec = data.view(-1)
+
+        input_vec = input_vec.to(device)
         vec_len = input_vec.size()[0]
         input_matrix = torch.zeros(vec_len, vec_len)
+        input_matrix = input_matrix.to(device)
         input_matrix[0] = input_vec
-
         input_matrix = input_matrix.transpose(0, 1)
-        u, s, v = np.linalg.svd(input_matrix)
-        output_matrix = torch.tensor(np.dot(u, v))
+
+        u, s, v = torch.svd(input_matrix)
+        u = u.to(device)
+        v = v.to(device)
+        output_matrix = u.matmul(v)
+        # print(output_matrix.shape)
+        # u, s, v = np.linalg.svd(input_matrix)
+        # output_matrix = torch.tensor(np.dot(u, v))
+        # print(output_matrix.shape)
+        # sys.exit(0)
         output_data = output_matrix[:, 0].view(tensor.shape)
         return output_data
 
