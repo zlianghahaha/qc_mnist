@@ -10,10 +10,10 @@ import torch.nn as nn
 import os
 import sys
 sys.path.append("../interfae/")
-from lib_model_summary import summary
+# from lib_model_summary import summary
 from collections import Counter
 from pathlib import Path
-from qiskit_simulator_wbn import run_simulator
+# from qiskit_simulator_wbn import run_simulator
 
 import logging
 logging.basicConfig(stream=sys.stdout,
@@ -94,9 +94,9 @@ def load_data(interest_num):
     transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
     # transform = transforms.Compose([transforms.Resize((img_size,img_size)),transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
     # choose the training and test datasets
-    train_data = datasets.MNIST(root='data', train=True,
+    train_data = datasets.MNIST(root='../../pytorch/data', train=True,
                                 download=True, transform=transform)
-    test_data = datasets.MNIST(root='data', train=False,
+    test_data = datasets.MNIST(root='../../pytorch/data', train=False,
                                download=True, transform=transform)
 
     train_data = select_num(train_data, interest_num)
