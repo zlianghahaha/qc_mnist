@@ -71,6 +71,8 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     for i in range(res[0].shape[0]):
+        if i%500==0:
+            print(i)
         npimg = res[0][i].numpy()
         im = Image.fromarray(npimg, mode="L")
         qc_data = trans_to_tensor(trans_resize(im))[0]
