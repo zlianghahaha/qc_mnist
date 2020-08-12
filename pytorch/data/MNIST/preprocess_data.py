@@ -13,7 +13,8 @@ import time
 class ToQuantumData(object):
     def __call__(self, tensor):
         # torch.set_printoptions(profile="full")
-        data = tensor
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        data = tensor.to(device)
         input_vec = data.view(-1)
         vec_len = input_vec.size()[0]
         input_matrix = torch.zeros(vec_len, vec_len)
