@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     for i in range(res[0].shape[0]):
         # print(res[0][i].shape)
-        if i % 5000 == 0:
+        if i % 500 == 0:
             print(i)
         npimg = res[0][i].numpy()
 
