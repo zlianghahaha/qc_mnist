@@ -34,6 +34,7 @@ def parse_args():
     # ML related
     # parser.add_argument('--device', default='cuda', help='device')
     parser.add_argument('-c','--interest_class',default="3, 6",help="investigate classes",)
+    parser.add_argument('-r', '--run_num', default="0", help="investigate classes", )
     # QC related
     parser.add_argument('-nq', "--classic", help="classic computing test", action="store_true", )
 
@@ -45,20 +46,27 @@ args = parse_args()
 interest_num = [int(x.strip()) for x in args.interest_class.split(",")]
 classical_eval = args.classic
 
+if classical_eval:
+    name = "C-"
+else:
+    name = "Q-"
+name+=args.interest_class+"_"+args.run_num
+
 img_size = 28
 # number of subprocesses to use for data loading
 num_workers = 0
 # how many samples per batch to load
 batch_size = 16
 inference_batch_size = 16
-num_f1 = 32
+num_f1 = 16
 num_f2 = len(interest_num)
 init_lr = 0.01
 
 save_to_file = False
 if save_to_file:
     sys.stdout = open(save_path + "/log", 'w')
-save_path = "./model/" + os.path.basename(sys.argv[0]) + "_" + time.strftime("%Y_%m_%d-%H_%M_%S")
+# save_path = "./model/" + os.path.basename(sys.argv[0]) + "_" + time.strftime("%Y_%m_%d-%H_%M_%S")
+save_path = "./model/"+name
 Path(save_path).mkdir(parents=True, exist_ok=True)
 
 resume_path = ""
