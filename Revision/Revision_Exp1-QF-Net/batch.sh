@@ -1,9 +1,9 @@
 #!/bin/sh
-name=ffnet_wobatch
-director=log_ffnet_wobatch
+name=qfnet_o_wobatch
+director=log_qfnet_o_wobatch
 gpu_num=1
-#for dataset in "1,5" "1,6" "3,6" "3,9" "3,8"
-for dataset in "3,8"
+for dataset in "1,5" "1,6" "3,6" "3,9" "3,8"
+#for dataset in "3,8"
 do
   for i in 1 2 3 4 5 6 7 8 9 10
   do
