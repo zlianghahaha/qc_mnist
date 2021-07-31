@@ -1,5 +1,5 @@
-from lib_qc import *
-from lib_util import *
+from lib_bn import *
+from lib_qf import *
 from lib_net import *
 import argparse
 import time
@@ -9,7 +9,7 @@ from torchvision import datasets
 import torch.nn as nn
 import os
 import sys
-sys.path.append("../interfae/")
+# sys.path.append("../interfae/")
 from lib_model_summary import summary
 from collections import Counter
 from pathlib import Path
@@ -47,6 +47,7 @@ def train(epoch,interest_num,criterion,train_loader):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data, True)
+        # print("output",output)
 
         pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
@@ -94,15 +95,17 @@ def test(interest_num,criterion,test_loader,debug=False):
         data, target = data.to(device), target.to(device)
         if debug:
             start = time.time()
+
         output = model(data, False)
 
         if debug:
             end = time.time()
             print("Time",end - start)
             sys.exit(0)
+
         test_loss += criterion(output, target)  # sum up batch loss
         pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
-        correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+        correct += pred.eq(target.data.view_as(pred)).cpu().sum() # get the right number
 
     a = 100. * correct / len(test_loader.dataset)
     accur.append(a)
@@ -139,13 +142,10 @@ def load_data(interest_num,datapath,isppd,img_size):
 
     else:
         # convert data to torch.FloatTensor
-        # transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
         transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
 
-        # transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
         transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
 
-        # transform = transforms.Compose([transforms.Resize((img_size,img_size)),transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
         # choose the training and test datasets
         train_data = datasets.MNIST(root=datapath, train=True,
                                     download=True, transform=transform)
@@ -154,6 +154,7 @@ def load_data(interest_num,datapath,isppd,img_size):
 
     train_data = select_num(train_data, interest_num)
     test_data = select_num(test_data, interest_num)
+
 
     # prepare data loaders
     train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
@@ -167,44 +168,39 @@ def parse_args():
     parser = argparse.ArgumentParser(description='QuantumFlow Classification Training')
 
     # ML related
-    parser.add_argument('--device', default='cuda', help='device')
+    parser.add_argument('--device', default='cpu', help='device')
     parser.add_argument('-c','--interest_class',default="3, 6",help="investigate classes",)
     parser.add_argument('-s','--img_size', default="4", help="image size 4: 4*4", )
-    parser.add_argument('-dp', '--datapath', default='../../pytorch/data', help='dataset')
+    parser.add_argument('-dp', '--datapath', default='../data', help='dataset')
     parser.add_argument('-ppd', "--preprocessdata", help="Using the preprocessed data", action="store_true", )
     parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
     parser.add_argument('-tb','--batch_size', default="32", help="training batch size", )
-    parser.add_argument('-ib','--inference_batch_size', default="32", help="inference batch size", )
-    parser.add_argument('-nn','--neural_in_layers', default="4, 2", help="PNN structrue", )
+    parser.add_argument('-ib','--inference_batch_size', default="1", help="inference batch size", )
+    parser.add_argument('-nn','--neural_in_layers', default="u:4, v:2", help="PNN structrue", )
     parser.add_argument('-l','--init_lr', default="0.01", help="PNN learning rate", )
     parser.add_argument('-m','--milestones', default="3, 7, 9", help="Training milestone", )
     parser.add_argument('-e','--max_epoch', default="10", help="Training epoch", )
     parser.add_argument('-r','--resume_path', default='', help='resume from checkpoint')
     parser.add_argument('-t',"--test_only", help="Only Test without Training", action="store_true", )
-    parser.add_argument('-bin', "--binary", help="binary activation", action="store_true", )
+    parser.add_argument('-bin', "--binary",default=False , help="binary activation", action="store_true", )
 
 
 
     # QC related
-    parser.add_argument('-nq', "--classic", help="classic computing test", action="store_true", )
-    parser.add_argument('-wn', "--with_norm", help="Using Batchnorm", action="store_true", )
-    parser.add_argument('-ql','--init_qc_lr', default="0.1", help="QC Batchnorm learning rate", )
-    parser.add_argument('-qa',"--given_ang", default="1 -1 1 -1, -1 -1",  help="ang amplify, the same size with --neural_in_layers",)
-    parser.add_argument('-qt',"--train_ang", help="train anglee", action="store_true", )
-    parser.add_argument('-qs', "--sim_range", default="0, 1551", help="quantum simulation range",)
+    parser.add_argument('-wn', "--with_norm", default=False ,help="Using Batchnorm", action="store_true", )
+
+
 
     # File
     parser.add_argument('-chk',"--save_chkp", help="Save checkpoints", action="store_true", )
     parser.add_argument('-chkname', '--chk_name', default='', help='folder name for chkpoint')
-    # parser.add_argument("--save_path", help="save path", )
-
+    
+    # Log
     parser.add_argument('-deb', "--debug", help="Debug mode", action="store_true", )
 
     args = parser.parse_args()
     return args
 
-    # path ="./model/exe_mnist.py_2020_08_04-18_40_38/checkpoint_8_0.9573.pth.tar"
-    # "./model/exe_mnist.py_2020_08_07-14_02_15/checkpoint_0_0.6997.pth.tar"
 if __name__ == "__main__":
     print("=" * 100)
     print("Training procedure for Quantum Computer:")
@@ -215,10 +211,7 @@ if __name__ == "__main__":
     print()
 
     args = parse_args()
-    # print(args.device)
 
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # device = torch.device("cpu")
     datapath = args.datapath
     isppd = args.preprocessdata
     device = args.device
@@ -227,7 +220,16 @@ if __name__ == "__main__":
     num_workers = int(args.num_workers)
     batch_size = int(args.batch_size)
     inference_batch_size = int(args.inference_batch_size)
-    layers = [int(x.strip()) for x in args.neural_in_layers.split(",")]
+    layers =[]
+    for item1 in args.neural_in_layers.split(","):
+        x= item1.split(":")
+        layer =[]
+        layer.append(x[0].strip())
+        layer.append(int(x[1].strip()))
+        layers.append(layer)
+    
+    print("layers:",layers)
+
     init_lr = float(args.init_lr)
     milestones = [int(x.strip()) for x in args.milestones.split(",")]
     max_epoch = int(args.max_epoch)
@@ -235,16 +237,8 @@ if __name__ == "__main__":
     training = not(args.test_only)
     binary = args.binary
     debug = args.debug
-    classic = args.classic
-    init_qc_lr = float(args.init_qc_lr)
     with_norm = args.with_norm
 
-    sim_range = [int(x.strip()) for x in args.sim_range.split(",")]
-
-    given_ang = [[int(y) for y in x.strip().split(" ")] for x in args.given_ang.split(",")]
-
-
-    train_ang = args.train_ang
     save_chkp = args.save_chkp
     if save_chkp:
         if args.chk_name!="":
@@ -277,30 +271,17 @@ if __name__ == "__main__":
 
     train_loader, test_loader = load_data(interest_class,datapath,isppd,img_size)
     criterion = nn.CrossEntropyLoss()
-    model = Net(img_size,layers,with_norm,given_ang,train_ang,training,binary,classic,debug)
+    model = Net(img_size,layers,with_norm,training,binary,debug)
     model = model.to(device)
 
     print(device)
-
-
-    if with_norm and train_ang:
-        para_list = []
-        for idx in range(len(layers)):
-            fc = getattr(model, "fc" + str(idx))
-            para_list.append({'params': fc.parameters(), 'lr': init_lr})
-
-            if idx==0:
-                continue
-            # qc = getattr(model, "qc"+str(idx))
-            # para_list.append({'params': qc.parameters(), 'lr': init_qc_lr})
-        optimizer = torch.optim.Adam(para_list)
-    else:
-        optimizer = torch.optim.Adam(model.parameters(), lr=init_lr)
-
-
-
+    optimizer = torch.optim.Adam(model.parameters())
+    
+    for item in model.parameters():
+        print("model.parameter:",item)
+  
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones, gamma=0.1)
-    print(resume_path,os.path.isfile(resume_path))
+    # print(resume_path,os.path.isfile(resume_path))
 
     if os.path.isfile(resume_path):
         print("=> loading checkpoint from '{}'<=".format(resume_path))
@@ -382,37 +363,6 @@ if __name__ == "__main__":
         q_end = time.time()
 
         print(q_start-q_end)
-
-        # correct = 0
-        # qc_correct = 0
-        # test_idx = 0
-        # for data, target in test_loader:
-        #     # if test_idx < sim_range[0] or test_idx >= sim_range[1]:
-        #     #     test_idx += 1
-        #     #     continue
-        #     target, new_target = modify_target(target, interest_class)
-        #     print(test_idx, target.item())
-        #     test_idx += 1
-
-        #     start = time.time()
-        #     output = model(data, False)
-        #     end = time.time()
-        #
-        #     q_start = time.time()
-        #     qc_output = run_simulator(model,data[0][0],layers)
-        #     q_end = time.time()
-        #
-        #     print("Test iteration {}: COut {}, QOut {}, CTime {}, QTime {}".format(test_idx,output,qc_output,end-start,q_end-q_start))
-        #     test_idx+=1
-        #
-        #     pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
-        #     qc_pred = qc_output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
-        #     correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-        #     qc_correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-        #
-        # print('Test set: Accuracy Class: {}/{}, Accuracy QC: {}/{}'.format(
-        #     correct, sim_range[1]-sim_range[0], qc_correct, sim_range[1]-sim_range[0]))
-        #
 
 
 

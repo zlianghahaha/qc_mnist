@@ -69,12 +69,15 @@ def save_checkpoint(state, is_best, save_path, filename):
 
 
 class BinarizeF(Function):
+    '''
+    >0: 1 <0:-1
+    '''
 
     @staticmethod
     def forward(cxt, input):
         output = input.new(input.size())
-        output[input >= 0] = 1
-        output[input < 0] = -1
+        output[input >= -0.00001] = 1
+        output[input < 0.00001] = -1
 
         return output
 
@@ -157,11 +160,6 @@ class BinaryLinear(nn.Linear):
             new_weight = torch.cat((new_weight, bias), -1)
             return self.do_slp_via_th(new_input, new_weight)
 
-            torch.set_printoptions(edgeitems=64)
-            # binary_bias = binarize(self.bias)/float(len(input[0].flatten())+1)
-            binary_bias = binarize(self.bias) / float(len(input[0].flatten()) + 1)
-            res = F.linear(input, binary_weight / float(len(input[0].flatten()) + 1), binary_bias)
-            return res
 
     def reset_parameters(self):
         # Glorot initialization
@@ -209,8 +207,10 @@ class BinaryLinearQuantumFirstLAYER(nn.Linear):
     def forward(self, input):
         binary_weight = binarize(self.weight)
         if self.bias is None:
+            # print(binary_weight)
             output = F.linear(input, binary_weight)
             # print(input,binary_weight, math.sqrt(input.shape[-1]))
+            
             output = torch.div(output, math.sqrt(input.shape[-1]))
             # output = torch.pow(output, 2)
 
