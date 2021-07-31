@@ -1,0 +1,36 @@
+
+inter_q_2 = QuantumRegister(1,"inter_q_2_qbits")
+norm_q_2 = QuantumRegister(1,"norm_q_2_qbits")
+out_q_2 = QuantumRegister(1,"out_q_2_qbits")
+circ.add_register(inter_q_2,norm_q_2,out_q_2)
+
+circ.barrier()
+
+if weight_2_2.sum()<0:
+    weight_2_2 = weight_2_2*-1
+idx = 0
+for idx in range(weight_2_2.flatten().size()[0]):
+    if weight_2_2[idx]==-1:
+        circ.x(hidden_neurons[idx])
+circ.h(inter_q_2)
+circ.cz(hidden_neurons[0],inter_q_2)
+circ.x(inter_q_2)
+circ.cz(hidden_neurons[1],inter_q_2)
+circ.x(inter_q_2)
+circ.h(inter_q_2)
+circ.x(inter_q_2)
+
+circ.barrier()
+
+norm_init_rad = float(norm_para_2.sqrt().arcsin()*2)
+circ.ry(norm_init_rad,norm_q_2)
+if norm_flag_2:
+    circ.cx(inter_q_2,out_q_2)
+    circ.x(inter_q_2)
+    circ.ccx(inter_q_2,norm_q_2,out_q_2)
+else:
+    circ.ccx(inter_q_2,norm_q_2,out_q_2)
+
+for idx in range(weight_2_2.flatten().size()[0]):
+    if weight_2_2[idx]==-1:
+        circ.x(hidden_neurons[idx])

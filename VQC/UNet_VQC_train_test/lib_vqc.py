@@ -181,9 +181,47 @@ class VQC_Net(nn.Module):
         #init  VClassicCircuitMatrix
         self.vcm = VClassicCircuitMatrix(num_qubit)
 
+    def prob2amp(self, input):
+        size = input.shape
+        shape = list(size)
+        shape[-1] = 2**self.num_qubit
+        output = torch.zeros(shape,dtype=torch.float64)
+
+        for i in range(size[0]):
+            output[i][0] = (1 - input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
+            output[i][1] = (input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
+            output[i][2] = (1 - input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
+            output[i][3] = (input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
+            output[i][4] = (1 - input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (1 - input[i][3])
+            output[i][5] = (input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (1 - input[i][3])
+            output[i][6] = (1 - input[i][0]) * (input[i][1]) * (input[i][2]) * (1 - input[i][3])
+            output[i][7] = (input[i][0]) * (input[i][1]) * (input[i][2]) * (1 - input[i][3])
+            output[i][8] = (1 - input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (input[i][3])
+            output[i][9] = (input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (input[i][3])
+            output[i][10] = (1 - input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (input[i][3])
+            output[i][11] = (input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (input[i][3])
+            output[i][12] = (1 - input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (input[i][3])
+            output[i][13] = (input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (input[i][3])
+            output[i][14] = (1 - input[i][0]) * (input[i][1]) * (input[i][2]) * (input[i][3])
+            output[i][15] = (input[i][0]) * (input[i][1]) * (input[i][2]) * (input[i][3])
+
+        return output
+
     def forward(self, x):
-        # print("x:",x)
+        # print("x:",x,self.num_qubit)
+        # mstate_temp = torch.index_select(x, 0, torch.tensor([0]))
+        # print(x.shape)
+        # mstate_temp = self.prob2amp(x)
+        # print(mstate_temp.t())
+
         mstate_temp = torch.index_select(x, 0, torch.tensor([0]))
+        mstate_temp = self.prob2amp(mstate_temp)
+
+        # size = mstate_temp.shape
+        # shape = list(size)
+        # shape.append(1)
+        # mstate_temp = mstate_temp.view(shape)
+        #
         mstate_temp = self.vcm.run(mstate_temp.t(),self.theta)
         mstate_temp = torch.take(mstate_temp, torch.tensor(range(0,self.class_num)))
         mstate = mstate_temp.view(1,-1)

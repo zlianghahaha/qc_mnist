@@ -3,12 +3,12 @@ from lib_qf import *
 from lib_bn import *
 from lib_vqc import *
 import torch
+import sys
 
 ## Define the NN architecture
 class Net(nn.Module):
     def __init__(self,img_size,layers,with_norm,training,binary,debug="False"):
         super(Net, self).__init__()
-
 
         self.in_size = img_size*img_size
         self.training = training
@@ -40,12 +40,14 @@ class Net(nn.Module):
 
 
     def forward(self, x, training=1):
+
         x = x.view(-1, self.in_size)
         for layer_idx in range(self.layer):
             if self.binary and layer_idx==0:
                 x = (binarize(x - 0.5) + 1) / 2
+            # print("input-",layer_idx, x)
             x = getattr(self, "fc" + str(layer_idx))(x)
-
+            # print("output-", layer_idx, x)
             if self.with_norm:
                 if layer_idx==0:
                     x = x.pow(2)
