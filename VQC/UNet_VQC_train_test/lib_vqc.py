@@ -133,10 +133,14 @@ class VClassicCircuitMatrix:
 
 
     def measurement(self,state):
-        sum_mat = torch.tensor(self.qf_sum(),dtype=torch.float64) 
+        sum_mat = torch.tensor(self.qf_sum(),dtype=torch.float64)
         sum_mat = sum_mat.t()
         state = state * state
         state = torch.mm(sum_mat,state)
+        return state
+
+    def state_prob(self,state):
+        state = state * state
         return state
     
     def resolve(self,state):
@@ -165,7 +169,8 @@ class VClassicCircuitMatrix:
 
         # sys.exit(0)
         state =self.vqc_10(state,thetas)
-        state = self.measurement(state)
+        state = self.state_prob(state)
+        # state = self.measurement(state)
         return state 
 
 
@@ -223,6 +228,8 @@ class VQC_Net(nn.Module):
         # mstate_temp = mstate_temp.view(shape)
         #
         mstate_temp = self.vcm.run(mstate_temp.t(),self.theta)
+        # print(mstate_temp)
+        # sys.exit(0)
         mstate_temp = torch.take(mstate_temp, torch.tensor(range(0,self.class_num)))
         mstate = mstate_temp.view(1,-1)
 
@@ -231,12 +238,13 @@ class VQC_Net(nn.Module):
             mstate_temp = torch.index_select(x, 0, torch.tensor([i]))
 
             mstate_temp = self.vcm.run(mstate_temp.t(),self.theta)
+
+
             mstate_temp = torch.take(mstate_temp, torch.tensor(range(0,self.class_num)))
             mstate_temp = mstate_temp.view(1,-1)
             # print("mstate_temp:",mstate_temp)
             mstate =  torch.cat((mstate,mstate_temp),dim=0)
-        # print("mstate:",mstate)
-        # sys.exit(0)
+
         return mstate
 
 
