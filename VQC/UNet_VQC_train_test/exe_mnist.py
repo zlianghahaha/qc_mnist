@@ -169,9 +169,9 @@ def parse_args():
 
     # ML related
     parser.add_argument('--device', default='cpu', help='device')
-    parser.add_argument('-c','--interest_class',default="3, 6",help="investigate classes",)
+    parser.add_argument('-c','--interest_class',default="3,6",help="investigate classes",)
     parser.add_argument('-s','--img_size', default="4", help="image size 4: 4*4", )
-    parser.add_argument('-dp', '--datapath', default='../data', help='dataset')
+    parser.add_argument('-dp', '--datapath', default='../../pytorch/data', help='dataset')
     parser.add_argument('-ppd', "--preprocessdata", help="Using the preprocessed data", action="store_true", )
     parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
     parser.add_argument('-tb','--batch_size', default="8", help="training batch size", )

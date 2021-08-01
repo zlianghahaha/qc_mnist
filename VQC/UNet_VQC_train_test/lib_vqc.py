@@ -133,10 +133,14 @@ class VClassicCircuitMatrix:
 
 
     def measurement(self,state):
-        sum_mat = torch.tensor(self.qf_sum(),dtype=torch.float64) 
+        sum_mat = torch.tensor(self.qf_sum(),dtype=torch.float64)
         sum_mat = sum_mat.t()
         state = state * state
         state = torch.mm(sum_mat,state)
+        return state
+
+    def state_prob(self,state):
+        state = state * state
         return state
     
     def resolve(self,state):
@@ -155,33 +159,7 @@ class VClassicCircuitMatrix:
 
         mstate = torch.sqrt(mstate+ 1e-8)
         return mstate
-        
-    def prob2amp(self, input):
-        size = input.shape
-        shape = list(size)
-        shape[-1] = 2**self._n_qubits
-        output = torch.zeros(shape,dtype=torch.float64)
 
-        for i in range(size[0]):
-            output[i][0] = (1 - input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
-            output[i][1] = (input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
-            output[i][2] = (1 - input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
-            output[i][3] = (input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
-            output[i][4] = (1 - input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (1 - input[i][3])
-            output[i][5] = (input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (1 - input[i][3])
-            output[i][6] = (1 - input[i][0]) * (input[i][1]) * (input[i][2]) * (1 - input[i][3])
-            output[i][7] = (input[i][0]) * (input[i][1]) * (input[i][2]) * (1 - input[i][3])
-            output[i][8] = (1 - input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (input[i][3])
-            output[i][9] = (input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (input[i][3])
-            output[i][10] = (1 - input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (input[i][3])
-            output[i][11] = (input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (input[i][3])
-            output[i][12] = (1 - input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (input[i][3])
-            output[i][13] = (input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (input[i][3])
-            output[i][14] = (1 - input[i][0]) * (input[i][1]) * (input[i][2]) * (input[i][3])
-            output[i][15] = (input[i][0]) * (input[i][1]) * (input[i][2]) * (input[i][3])
-
-        return output
-        
     def run(self,state, thetas):
         # print("state_item 0 :",state)
         if state.shape[0]==self._n_qubits:
@@ -204,6 +182,32 @@ class VQC_Net(nn.Module):
         #init  VClassicCircuitMatrix
         self.vcm = VClassicCircuitMatrix(num_qubit)
 
+    def prob2amp(self, input):
+        size = input.shape
+        shape = list(size)
+        shape[-1] = 2**self.num_qubit
+        output = torch.zeros(shape,dtype=torch.float64)
+
+        for i in range(size[0]):
+            output[i][0] = (1 - input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
+            output[i][1] = (input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
+            output[i][2] = (1 - input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
+            output[i][3] = (input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
+            output[i][4] = (1 - input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (1 - input[i][3])
+            output[i][5] = (input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (1 - input[i][3])
+            output[i][6] = (1 - input[i][0]) * (input[i][1]) * (input[i][2]) * (1 - input[i][3])
+            output[i][7] = (input[i][0]) * (input[i][1]) * (input[i][2]) * (1 - input[i][3])
+            output[i][8] = (1 - input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (input[i][3])
+            output[i][9] = (input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (input[i][3])
+            output[i][10] = (1 - input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (input[i][3])
+            output[i][11] = (input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (input[i][3])
+            output[i][12] = (1 - input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (input[i][3])
+            output[i][13] = (input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (input[i][3])
+            output[i][14] = (1 - input[i][0]) * (input[i][1]) * (input[i][2]) * (input[i][3])
+            output[i][15] = (input[i][0]) * (input[i][1]) * (input[i][2]) * (input[i][3])
+
+        return output
+
     def forward(self, x):
         # print("x:",x)
 
@@ -224,18 +228,18 @@ class VQC_Net(nn.Module):
         # variance circuit matrix
         for i in range(1,x.shape[0]):
             mstate_temp = torch.index_select(x, 0, torch.tensor([i]))
-
             mstate_temp = self.vcm.run(mstate_temp.t(),self.theta)
+
             if self.class_num <=self.num_qubit:
                 mstate_temp = self.vcm.measurement(mstate_temp)
             else:
                 mstate_temp = torch.pow(mstate_temp,2)
             mstate_temp = torch.take(mstate_temp, torch.tensor(range(0,self.class_num)))
+            
             mstate_temp = mstate_temp.view(1,-1)
             # print("mstate_temp:",mstate_temp)
             mstate =  torch.cat((mstate,mstate_temp),dim=0)
-        # print("mstate:",mstate)
-        # sys.exit(0)
+
         return mstate
 
 
