@@ -174,7 +174,7 @@ def parse_args():
     parser.add_argument('-dp', '--datapath', default='../data', help='dataset')
     parser.add_argument('-ppd', "--preprocessdata", help="Using the preprocessed data", action="store_true", )
     parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
-    parser.add_argument('-tb','--batch_size', default="32", help="training batch size", )
+    parser.add_argument('-tb','--batch_size', default="8", help="training batch size", )
     parser.add_argument('-ib','--inference_batch_size', default="1", help="inference batch size", )
     parser.add_argument('-nn','--neural_in_layers', default="u:4, v:2", help="PNN structrue", )
     parser.add_argument('-l','--init_lr', default="0.01", help="PNN learning rate", )

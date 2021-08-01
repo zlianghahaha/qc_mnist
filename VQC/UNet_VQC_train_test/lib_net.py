@@ -45,11 +45,10 @@ class Net(nn.Module):
             if self.binary and layer_idx==0:
                 x = (binarize(x - 0.5) + 1) / 2
             x = getattr(self, "fc" + str(layer_idx))(x)
-
-            if self.with_norm:
-                if layer_idx==0:
+            if layer_idx==0:
                     x = x.pow(2)
-                elif self.layers[layer_idx][0]=='p' or self.layers[layer_idx][0]=='u':
+            elif self.with_norm:
+                if self.layers[layer_idx][0]=='p' or self.layers[layer_idx][0]=='u':
                     x = getattr(self, "qca"+str(layer_idx))(x,training=self.training)
 
         if self.layers[-1][1] == 1:
