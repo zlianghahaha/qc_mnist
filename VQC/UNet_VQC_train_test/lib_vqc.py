@@ -145,17 +145,17 @@ class VClassicCircuitMatrix:
     
     def resolve(self,state):
         state = state.double()
-        mstate = torch.ones(int(math.pow(2,self._n_qubits )),1, dtype=torch.float64)
+        mstate = torch.ones(int(math.pow(2,self._n_qubits )),state.shape[1], dtype=torch.float64)
         sum_mat = torch.tensor(self.qf_sum(),dtype=torch.float64)
 
         for i in range(sum_mat.shape[0]):
             for j in range(sum_mat.shape[1]):
                 if int(sum_mat[i][j]) == 0:
-                    val = torch.mm(torch.index_select(mstate,0,torch.tensor([i])),1-torch.index_select(state,0,torch.tensor([j]))).squeeze()
-                    mstate = self.set_value(mstate,i,0,torch.index_select(val,0,torch.tensor([0])))
+                    val = torch.mul(torch.index_select(mstate,0,torch.tensor([i])),1-torch.index_select(state,0,torch.tensor([j]))).squeeze()
+                    mstate = self.set_value(mstate,i,range(state.shape[1]),val)
                 elif int(sum_mat[i][j]) == 1: 
-                    val = torch.mm(torch.index_select(mstate,0,torch.tensor([i])),torch.index_select(state,0,torch.tensor([j]))).squeeze()
-                    mstate = self.set_value(mstate,i,0,torch.index_select(val,0,torch.tensor([0])))
+                    val = torch.mul(torch.index_select(mstate,0,torch.tensor([i])),torch.index_select(state,0,torch.tensor([j]))).squeeze()
+                    mstate = self.set_value(mstate,i,range(state.shape[1]),val)
 
         mstate = torch.sqrt(mstate+ 1e-8)
         return mstate
@@ -164,7 +164,7 @@ class VClassicCircuitMatrix:
         # print("state_item 0 :",state)
         if state.shape[0]==self._n_qubits:
             state= self.resolve(state)
-
+        # print("state_item 0 :",state)
         # sys.exit(0)
         state =self.vqc_10(state,thetas)
         return state 
@@ -176,71 +176,24 @@ class VQC_Net(nn.Module):
 
         #init parameter
         self.num_qubit = num_qubit
-        self.theta= Parameter(torch.tensor([np.pi/3,np.pi/4,np.pi/3,np.pi/9,np.pi,np.pi/4,np.pi/10,np.pi/2],dtype=torch.float64,requires_grad=True))#np.random.randn(8)*np.pi
+        self.theta= Parameter(torch.tensor(np.random.randn(8)*np.pi,dtype=torch.float64,requires_grad=True)) #[np.pi/3,np.pi/4,np.pi/3,np.pi/9,np.pi,np.pi/4,np.pi/10,np.pi/2]
         self.class_num = class_num
 
         #init  VClassicCircuitMatrix
         self.vcm = VClassicCircuitMatrix(num_qubit)
 
-    def prob2amp(self, input):
-        size = input.shape
-        shape = list(size)
-        shape[-1] = 2**self.num_qubit
-        output = torch.zeros(shape,dtype=torch.float64)
-
-        for i in range(size[0]):
-            output[i][0] = (1 - input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
-            output[i][1] = (input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
-            output[i][2] = (1 - input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
-            output[i][3] = (input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (1 - input[i][3])
-            output[i][4] = (1 - input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (1 - input[i][3])
-            output[i][5] = (input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (1 - input[i][3])
-            output[i][6] = (1 - input[i][0]) * (input[i][1]) * (input[i][2]) * (1 - input[i][3])
-            output[i][7] = (input[i][0]) * (input[i][1]) * (input[i][2]) * (1 - input[i][3])
-            output[i][8] = (1 - input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (input[i][3])
-            output[i][9] = (input[i][0]) * (1 - input[i][1]) * (1 - input[i][2]) * (input[i][3])
-            output[i][10] = (1 - input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (input[i][3])
-            output[i][11] = (input[i][0]) * (input[i][1]) * (1 - input[i][2]) * (input[i][3])
-            output[i][12] = (1 - input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (input[i][3])
-            output[i][13] = (input[i][0]) * (1 - input[i][1]) * (input[i][2]) * (input[i][3])
-            output[i][14] = (1 - input[i][0]) * (input[i][1]) * (input[i][2]) * (input[i][3])
-            output[i][15] = (input[i][0]) * (input[i][1]) * (input[i][2]) * (input[i][3])
-
-        return output
-
     def forward(self, x):
-        # print("x:",x)
-
         # x = self.vcm.prob2amp(x)
 
-
-        mstate_temp = torch.index_select(x, 0, torch.tensor([0]))
-        mstate_temp = self.vcm.run(mstate_temp.t(),self.theta)
+        x = self.vcm.run(x.t(),self.theta)
 
         if self.class_num <=self.num_qubit:
-            mstate_temp = self.vcm.measurement(mstate_temp)
+            x = self.vcm.measurement(x)
         else:
-            mstate_temp = torch.pow(mstate_temp,2)
+            x = torch.pow(x,2)
 
-        mstate_temp = torch.take(mstate_temp, torch.tensor(range(0,self.class_num)))
-        mstate = mstate_temp.view(1,-1)
-
-        # variance circuit matrix
-        for i in range(1,x.shape[0]):
-            mstate_temp = torch.index_select(x, 0, torch.tensor([i]))
-            mstate_temp = self.vcm.run(mstate_temp.t(),self.theta)
-
-            if self.class_num <=self.num_qubit:
-                mstate_temp = self.vcm.measurement(mstate_temp)
-            else:
-                mstate_temp = torch.pow(mstate_temp,2)
-            mstate_temp = torch.take(mstate_temp, torch.tensor(range(0,self.class_num)))
-            
-            mstate_temp = mstate_temp.view(1,-1)
-            # print("mstate_temp:",mstate_temp)
-            mstate =  torch.cat((mstate,mstate_temp),dim=0)
-
-        return mstate
+        x = torch.index_select(x, 0,torch.tensor(range(self.class_num)))
+        return x.t()
 
 
 
