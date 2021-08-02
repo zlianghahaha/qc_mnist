@@ -25,6 +25,8 @@ class Net(nn.Module):
             elif layers[idx][0]=='p':
                 setattr(self, fc_name, BinaryLinear(loop_in_size, layers[idx][1], bias=False))
             elif layers[idx][0]=='v':
+                if idx ==0:
+                    loop_in_size = int(np.log2(loop_in_size))
                 setattr(self, fc_name, VQC_Net(loop_in_size, layers[idx][1]))
             loop_in_size = layers[idx][1]
 
@@ -47,11 +49,13 @@ class Net(nn.Module):
                 x = (binarize(x - 0.5) + 1) / 2
             # print("input-",layer_idx, x)
             x = getattr(self, "fc" + str(layer_idx))(x)
-            if layer_idx==0:
-                    x = pow(x,2)
-            elif self.with_norm:
+
+            if self.with_norm:
                 if self.layers[layer_idx][0]=='p' or self.layers[layer_idx][0]=='u':
                     x = getattr(self, "qca"+str(layer_idx))(x,training=self.training)
+            else:
+                if layer_idx==0 and self.layers[layer_idx][0]=='u':
+                    x = pow(x,2)
 
         if self.layers[-1][1] == 1:
             x = torch.cat((x, 1 - x), -1)

@@ -169,16 +169,16 @@ def parse_args():
 
     # ML related
     parser.add_argument('--device', default='cpu', help='device')
-    parser.add_argument('-c','--interest_class',default="3,6",help="investigate classes",)
-    parser.add_argument('-s','--img_size', default="4", help="image size 4: 4*4", )
+    parser.add_argument('-c','--interest_class',default="0,1,3,6,9",help="investigate classes",)
+    parser.add_argument('-s','--img_size', default="16", help="image size 4: 4*4", )
     parser.add_argument('-dp', '--datapath', default='../../pytorch/data', help='dataset')
     parser.add_argument('-ppd', "--preprocessdata", help="Using the preprocessed data", action="store_true", )
     parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
-    parser.add_argument('-tb','--batch_size', default="8", help="training batch size", )
-    parser.add_argument('-ib','--inference_batch_size', default="1", help="inference batch size", )
-    parser.add_argument('-nn','--neural_in_layers', default="u:4, v:2", help="PNN structrue", )
-    parser.add_argument('-l','--init_lr', default="0.01", help="PNN learning rate", )
-    parser.add_argument('-m','--milestones', default="3, 7, 9", help="Training milestone", )
+    parser.add_argument('-tb','--batch_size', default="64", help="training batch size", )
+    parser.add_argument('-ib','--inference_batch_size', default="64", help="inference batch size", )
+    parser.add_argument('-nn','--neural_in_layers', default="u:6,v:5", help="PNN structrue", )
+    parser.add_argument('-l','--init_lr', default="0.1", help="PNN learning rate", )
+    parser.add_argument('-m','--milestones', default="2,6,8", help="Training milestone", )
     parser.add_argument('-e','--max_epoch', default="10", help="Training epoch", )
     parser.add_argument('-r','--resume_path', default='', help='resume from checkpoint')
     parser.add_argument('-t',"--test_only", help="Only Test without Training", action="store_true", )
@@ -275,7 +275,7 @@ if __name__ == "__main__":
     model = model.to(device)
 
     print(device)
-    optimizer = torch.optim.Adam(model.parameters())
+    optimizer = torch.optim.Adam(model.parameters(),lr=init_lr)
     
     for item in model.parameters():
         print("model.parameter:",item)

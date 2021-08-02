@@ -145,6 +145,7 @@ class VClassicCircuitMatrix:
     
     def resolve(self,state):
         state = state.double()
+        # state = torch.pow(state,2)
         mstate = torch.ones(int(math.pow(2,self._n_qubits )),state.shape[1], dtype=torch.float64)
         sum_mat = torch.tensor(self.qf_sum(),dtype=torch.float64)
 
@@ -176,7 +177,7 @@ class VQC_Net(nn.Module):
 
         #init parameter
         self.num_qubit = num_qubit
-        self.theta= Parameter(torch.tensor(np.random.randn(8)*np.pi,dtype=torch.float64,requires_grad=True)) #[np.pi/3,np.pi/4,np.pi/3,np.pi/9,np.pi,np.pi/4,np.pi/10,np.pi/2]
+        self.theta= Parameter(torch.tensor(np.random.randn(2*self.num_qubit)*np.pi,dtype=torch.float64,requires_grad=True)) #[np.pi/3,np.pi/4,np.pi/3,np.pi/9,np.pi,np.pi/4,np.pi/10,np.pi/2]
         self.class_num = class_num
 
         #init  VClassicCircuitMatrix
@@ -184,7 +185,7 @@ class VQC_Net(nn.Module):
 
     def forward(self, x):
         # x = self.vcm.prob2amp(x)
-
+        x = x.double()
         x = self.vcm.run(x.t(),self.theta)
 
         if self.class_num <=self.num_qubit:
@@ -193,7 +194,9 @@ class VQC_Net(nn.Module):
             x = torch.pow(x,2)
 
         x = torch.index_select(x, 0,torch.tensor(range(self.class_num)))
-        return x.t()
+        # print(x)
+        # sys.exit(0)
+        return x.t().float()
 
 
 
