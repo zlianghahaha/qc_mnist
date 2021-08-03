@@ -4,6 +4,7 @@ from lib_bn import *
 from lib_vqc import *
 import torch
 import sys
+import torch.nn.functional as F
 
 ## Define the NN architecture
 class Net(nn.Module):
@@ -22,9 +23,13 @@ class Net(nn.Module):
             fc_name = "fc"+str(idx)
             if layers[idx][0]=='u':
                 setattr(self, fc_name, BinaryLinearQuantumFirstLAYER(loop_in_size, layers[idx][1], bias=False))
+            elif layers[idx][0]=='c':
+                setattr(self, fc_name, BinaryLinearClassic(loop_in_size, layers[idx][1], bias=False))
+            elif layers[idx][0]=='f':
+                setattr(self, fc_name, nn.Linear(loop_in_size, layers[idx][1]))
             elif layers[idx][0]=='p':
                 setattr(self, fc_name, BinaryLinear(loop_in_size, layers[idx][1], bias=False))
-            elif layers[idx][0]=='v' and idx == 0:
+            elif layers[idx][0]=='v' and loop_in_size>10:
                 if(int(torch.log(torch.tensor(loop_in_size))/torch.log(torch.tensor(2)))!=torch.log(torch.tensor(loop_in_size))/torch.log(torch.tensor(2))):
                     print("Not support input size!")
                     sys.exit(0)
@@ -38,24 +43,27 @@ class Net(nn.Module):
             for idx in range(self.layer):
                 if idx==0:
                     continue
-                elif layers[idx][0]=='p' or layers[idx][0]=='u':
+                elif layers[idx][0]=='p' or layers[idx][0]=='u' or layers[idx][0]=='c':
                     qca_name = "qca"+str(idx)
                     setattr(self, qca_name, QC_Norm_Correction_try2(num_features=layers[idx][1]))
 
-
+        self.dropout = nn.Dropout(0.25)
+        self.fc1_bn = nn.BatchNorm1d(256)
 
     def forward(self, x, training=1):
-        if self.layers[0][0]=="v":
-            x = x.double()
         x = x.view(-1, self.in_size)
         for layer_idx in range(self.layer):
+            if self.layers[layer_idx][0] == "v":
+                x = x.double()
             if self.binary and layer_idx==0:
                 x = (binarize(x - 0.5) + 1) / 2
             # print("input-",layer_idx, x)
             x = getattr(self, "fc" + str(layer_idx))(x)
-            if self.layers[layer_idx][0]=='u':
-            # if layer_idx == 'u':
-                    x = pow(x,2)
+
+            if self.layers[layer_idx][0]=='u' or self.layers[layer_idx][0]=='c':
+                # x=x
+                # x = F.relu(x)
+                x = pow(x,2)
             elif self.with_norm:
                 if self.layers[layer_idx][0]=='p' or self.layers[layer_idx][0]=='u':
                     x = getattr(self, "qca"+str(layer_idx))(x,training=self.training)
