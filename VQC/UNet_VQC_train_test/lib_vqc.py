@@ -158,7 +158,7 @@ class VClassicCircuitMatrix:
                     val = torch.mul(torch.index_select(mstate,0,torch.tensor([i])),torch.index_select(state,0,torch.tensor([j]))).squeeze()
                     mstate = self.set_value(mstate,i,range(state.shape[1]),val)
 
-        mstate = torch.sqrt(mstate+ 1e-8)
+        mstate = torch.sqrt(mstate+ 1e-6)
         return mstate
 
     def run(self,state, thetas):
@@ -190,8 +190,8 @@ class VQC_Net(nn.Module):
 
         if self.class_num <=self.num_qubit:
             x = self.vcm.measurement(x)
-        else:
-            x = torch.pow(x,2)
+        # else:
+            # x = torch.pow(x,2)
 
         x = torch.index_select(x, 0,torch.tensor(range(self.class_num)))
         # print(x)

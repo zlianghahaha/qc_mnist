@@ -164,22 +164,36 @@ def load_data(interest_num,datapath,isppd,img_size):
 
     return train_loader,test_loader
 
+
+def clip_gradient(optimizer, grad_clip):
+    """
+    Clips gradients computed during backpropagation to avoid explosion of gradients.
+
+    :param optimizer: optimizer with the gradients to be clipped
+    :param grad_clip: clip value
+    """
+    for group in optimizer.param_groups:
+        for param in group["params"]:
+            if param.grad is not None:
+                param.grad.data.clamp_(-grad_clip, grad_clip)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description='QuantumFlow Classification Training')
 
     # ML related
     parser.add_argument('--device', default='cpu', help='device')
-    parser.add_argument('-c','--interest_class',default="0,1,3,6,9",help="investigate classes",)
+    parser.add_argument('-c','--interest_class',default="0,1,2,3,4,5,6,7,8,9",help="investigate classes",)
     parser.add_argument('-s','--img_size', default="16", help="image size 4: 4*4", )
     parser.add_argument('-dp', '--datapath', default='../../pytorch/data', help='dataset')
     parser.add_argument('-ppd', "--preprocessdata", help="Using the preprocessed data", action="store_true", )
     parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
     parser.add_argument('-tb','--batch_size', default="64", help="training batch size", )
-    parser.add_argument('-ib','--inference_batch_size', default="64", help="inference batch size", )
-    parser.add_argument('-nn','--neural_in_layers', default="u:6,v:5", help="PNN structrue", )
+    parser.add_argument('-ib','--inference_batch_size', default="32", help="inference batch size", )
+    parser.add_argument('-nn','--neural_in_layers', default="v:256,u:10", help="PNN structrue", )
     parser.add_argument('-l','--init_lr', default="0.1", help="PNN learning rate", )
-    parser.add_argument('-m','--milestones', default="2,6,8", help="Training milestone", )
-    parser.add_argument('-e','--max_epoch', default="10", help="Training epoch", )
+    parser.add_argument('-m','--milestones', default="5,11,14,17", help="Training milestone", )
+    parser.add_argument('-e','--max_epoch', default="20", help="Training epoch", )
     parser.add_argument('-r','--resume_path', default='', help='resume from checkpoint')
     parser.add_argument('-t',"--test_only", help="Only Test without Training", action="store_true", )
     parser.add_argument('-bin', "--binary",default=False , help="binary activation", action="store_true", )
