@@ -58,7 +58,7 @@ def train(epoch,interest_num,criterion,train_loader):
 
         optimizer.step()
 
-        if batch_idx % 100 == 0:
+        if batch_idx % 25 == 0:
             logger.info('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tAccuracy: {}/{} ({:.2f}%)'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                        100. * batch_idx / len(train_loader), loss, correct, (batch_idx + 1) * len(data),
@@ -174,9 +174,9 @@ def parse_args():
     parser.add_argument('-dp', '--datapath', default='../../pytorch/data', help='dataset')
     parser.add_argument('-ppd', "--preprocessdata", help="Using the preprocessed data", action="store_true", )
     parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
-    parser.add_argument('-tb','--batch_size', default="8", help="training batch size", )
-    parser.add_argument('-ib','--inference_batch_size', default="1", help="inference batch size", )
-    parser.add_argument('-nn','--neural_in_layers', default="u:4, v:2", help="PNN structrue", )
+    parser.add_argument('-tb','--batch_size', default="128", help="training batch size", )
+    parser.add_argument('-ib','--inference_batch_size', default="256", help="inference batch size", )
+    parser.add_argument('-nn','--neural_in_layers', default="u:6, v:64, p:5", help="PNN structrue", )
     parser.add_argument('-l','--init_lr', default="0.01", help="PNN learning rate", )
     parser.add_argument('-m','--milestones', default="3, 7, 9", help="Training milestone", )
     parser.add_argument('-e','--max_epoch', default="10", help="Training epoch", )
@@ -275,7 +275,7 @@ if __name__ == "__main__":
     model = model.to(device)
 
     print(device)
-    optimizer = torch.optim.Adam(model.parameters())
+    optimizer = torch.optim.Adam(model.parameters(),lr=init_lr)
     
     for item in model.parameters():
         print("model.parameter:",item)

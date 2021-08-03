@@ -176,7 +176,7 @@ class VQC_Net(nn.Module):
 
         #init parameter
         self.num_qubit = num_qubit
-        self.theta= Parameter(torch.tensor(np.random.randn(8)*np.pi,dtype=torch.float64,requires_grad=True)) #[np.pi/3,np.pi/4,np.pi/3,np.pi/9,np.pi,np.pi/4,np.pi/10,np.pi/2]
+        self.theta= Parameter(torch.tensor(np.random.randn(2*self.num_qubit)*np.pi,dtype=torch.float64,requires_grad=True)) #[np.pi/3,np.pi/4,np.pi/3,np.pi/9,np.pi,np.pi/4,np.pi/10,np.pi/2]
         self.class_num = class_num
 
         #init  VClassicCircuitMatrix
@@ -190,10 +190,11 @@ class VQC_Net(nn.Module):
         if self.class_num <=self.num_qubit:
             x = self.vcm.measurement(x)
         else:
-            x = torch.pow(x,2)
+            # x = torch.pow(x,2)
+            x = x
 
         x = torch.index_select(x, 0,torch.tensor(range(self.class_num)))
-        return x.t()
+        return x.t().float()
 
 
 
