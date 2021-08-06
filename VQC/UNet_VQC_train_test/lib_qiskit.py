@@ -1,5 +1,6 @@
 
 
+from pickle import NONE
 import torch
 import torchvision
 from torchvision import datasets
@@ -175,11 +176,11 @@ class ULayerCircuit():
         if self.n_qubit > 4:
             print('UNetCircuit: The input size is too big. Qubits should be less than 4.')
             sys.exit(0)
-        print("UNetCircuit: n_qubit =",self.n_qubit,",n_class =",self.n_class)
+        # print("UNetCircuit: n_qubit =",self.n_qubit,",n_class =",self.n_class)
         
     
     def add_aux(self,circuit):
-        if self.n_qubit == 3:
+        if self.n_qubit <= 3:
             aux = QuantumRegister(1,"aux_qbit")
         elif self.n_qubit == 4:
             aux = QuantumRegister(2,"aux_qbit")
@@ -199,7 +200,7 @@ class ULayerCircuit():
         circuit.add_register(out_qubits)
         return out_qubits
 
-    def forward(self,circuit,data_matrix,weight,aux,in_qubits,out_qubit):
+    def forward(self,circuit,data_matrix,weight,in_qubits,out_qubit,aux = []):
         for i in range(self.n_class):
             n_q_gates,n_idx = self.qf_map_extract_from_weight(weight[i])
             circuit.append(UnitaryGate(data_matrix[n_idx], label="Input"), in_qubits[i][0:self.n_qubit])
