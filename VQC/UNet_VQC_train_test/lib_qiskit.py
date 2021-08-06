@@ -165,7 +165,7 @@ class ExtendGate():
             if state[idx]=='0':
                 circ.x(qubits[idx])
 
-class UNetCircuit():
+class ULayerCircuit():
 ################ Weiwen on 06-02-2021 ################
 # QuantumFlow Weight Generation for U-Layer
 ######################################################
@@ -387,14 +387,15 @@ class UNetCircuit():
         return quantum_gates,ret_index
     
 
+# just for temp 
 class PLayerCircuit():
     def __init__(self,input_num,output_num):
         self.input_num = input_num
         self.output_num = output_num
-        if self.n_qubit > 4:
-            print('PLayerCircuit: The input size is too big. Qubits should be less than 4.')
+        if self.input_num != 2 or self.output_num != 2:
+            print('PLayerCircuit: The input size or output size is not 2. Now thet p-layer only support 2 inputs and 2 outputs!')
             sys.exit(0)
-        print("PLayerCircuit: n_qubit =",self.n_qubit,",n_class =",self.n_class)
+        print("PLayerCircuit: input_num =",self.input_num,",output_num =",self.output_num)
 
     def add_out_qubits(self,circuit):
         out_qubits = QuantumRegister(self.output_num,"p_layer_qbits")
@@ -404,16 +405,50 @@ class PLayerCircuit():
     def forward(self,circuit,weight,in_qubits,out_qubits):
         for i in range(self.output_num):
             #mul weight
+            if weight[i].sum()<0:
+                weight[i] = weight[i]*-1
+            idx = 0
             for idx in range(weight[i].flatten().size()[0]):
                 if weight[i][idx]==-1:
                     circuit.x(in_qubits[idx])
-            #sum
-            circuit.h(out_qubits[i])
-# opt_circ.cz(hidden_neurons[0],inter_q_1)
-# opt_circ.x(inter_q_1)
-# opt_circ.cz(hidden_neurons[1],inter_q_1)
-# opt_circ.x(inter_q_1)
-# opt_circ.h(inter_q_1)
-# opt_circ.x(inter_q_1)
-            
+            #sum and pow2
         
+            circuit.h(out_qubits[i])
+            circuit.cz(in_qubits[0],out_qubits[i])
+            circuit.x(out_qubits[i])
+            circuit.cz(in_qubits[1],out_qubits[i])
+            circuit.x(out_qubits[i])
+            circuit.h(out_qubits[i])
+            circuit.x(out_qubits[i])
+            #recover
+            for idx in range(weight[i].flatten().size()[0]):
+                if weight[i][idx]==-1:
+                    circuit.x(in_qubits[idx])
+            circuit.barrier(in_qubits,out_qubits)
+
+class NormerlizeCircuit():
+    def __init__(self,n_qubit):
+        self.n_qubit = n_qubit
+        print("NormerlizeCircuit: n_qubit =",self.n_qubit)
+
+    def add_norm_qubits(self,circuit):
+        norm_qubits = QuantumRegister(self.n_qubit,"norm_qbits")
+        circuit.add_register(norm_qubits)
+        return norm_qubits
+
+    def add_out_qubits(self,circuit):
+        out_qubits = QuantumRegister(self.n_qubit,"norm_output_qbits")
+        circuit.add_register(out_qubits)
+        return out_qubits
+    
+    def forward(self,circuit,input_qubits,norm_qubits,out_qubits,norm_flag,norm_para):
+        for i in range(self.n_qubit):
+            norm_init_rad = float(norm_para[i].sqrt().arcsin()*2)
+            circuit.ry(norm_init_rad,norm_qubits[i])
+            if norm_flag[i]:
+                circuit.cx(input_qubits[i],out_qubits[i])
+                circuit.x(input_qubits[i])
+                circuit.ccx(input_qubits[i],norm_qubits[i],out_qubits[i])
+            else:
+                circuit.ccx(input_qubits[i],norm_qubits[i],out_qubits[i])
+
