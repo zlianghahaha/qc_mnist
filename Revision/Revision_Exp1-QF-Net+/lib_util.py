@@ -73,8 +73,8 @@ class BinarizeF(Function):
     @staticmethod
     def forward(cxt, input):
         output = input.new(input.size())
-        output[input >= 0] = 1
-        output[input < 0] = -1
+        output[input >= -1e-8] = 1
+        output[input < 1e-8] = -1
 
         return output
 

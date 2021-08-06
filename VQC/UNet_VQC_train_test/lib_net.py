@@ -33,6 +33,8 @@ class Net(nn.Module):
             elif layers[idx][0]=='p2a':
                 setattr(self, fc_name, Prop2amp())
             elif layers[idx][0]=='v':
+                if idx ==0:
+                    loop_in_size = int(np.log2(loop_in_size))
                 setattr(self, fc_name, VQC_Net(loop_in_size, layers[idx][1]))
             elif layers[idx][0]=='v10':
                 setattr(self, fc_name, VQC_Net(loop_in_size, layers[idx][1],'vqc_10'))
