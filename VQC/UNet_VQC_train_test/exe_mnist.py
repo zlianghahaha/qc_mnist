@@ -1,20 +1,17 @@
-from lib_bn import *
-from lib_qf import *
 from lib_net import *
+from lib_dataloader import *
+from lib_utils import *
+
 import argparse
 import time
 import torch
-import torchvision.transforms as transforms
-from torchvision import datasets
 import torch.nn as nn
 import os
 import sys
-# sys.path.append("../interfae/")
-from lib_model_summary import summary
 from collections import Counter
 from pathlib import Path
 # from qiskit_simulator_wbn import run_simulator
-from SelfMNIST import *
+
 import logging
 logging.basicConfig(stream=sys.stdout,
                     level=logging.WARNING,
@@ -22,18 +19,41 @@ logging.basicConfig(stream=sys.stdout,
 logger = logging.getLogger(__name__)
 
 
-class ToQuantumData_Batch(object):
-    def __call__(self, tensor):
-        data = tensor
-        input_vec = data.view(-1)
-        vec_len = input_vec.size()[0]
-        input_matrix = torch.zeros(vec_len,vec_len)
-        input_matrix[0] = input_vec
-        input_matrix = input_matrix.transpose(0,1)
-        u,s,v = np.linalg.svd(input_matrix)
-        output_matrix = torch.tensor(np.dot(u,v))
-        output_data = output_matrix[:,0].view(data.shape)
-        return output_data
+def parse_args():
+    parser = argparse.ArgumentParser(description='QuantumFlow Classification Training')
+
+    # ML related
+    parser.add_argument('--device', default='cpu', help='device')
+    parser.add_argument('-c','--interest_class',default="3,6",help="investigate classes",)
+    parser.add_argument('-s','--img_size', default="4", help="image size 4: 4*4", )
+    parser.add_argument('-dp', '--datapath', default='/home/hzr/Software/quantum/qc_mnist/pytorch/data', help='dataset')
+    parser.add_argument('-ppd', "--preprocessdata", help="Using the preprocessed data", action="store_true", )
+    parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
+    parser.add_argument('-tb','--batch_size', default="64", help="training batch size", )
+    parser.add_argument('-ib','--inference_batch_size', default="32", help="inference batch size", )
+    parser.add_argument('-nn','--neural_in_layers', default="u:4,p2a:16,v:16:u:3", help="QNN structrue :<layer1 name: output_number;layer2 name:output_number...>", )
+
+    parser.add_argument('-l','--init_lr', default="0.1", help="PNN learning rate", )
+    parser.add_argument('-m','--milestones', default="2,6, 8, 9", help="Training milestone", )
+    parser.add_argument('-e','--max_epoch', default="10", help="Training epoch", )
+    parser.add_argument('-r','--resume_path', default='', help='resume from checkpoint')
+    parser.add_argument('-t',"--test_only", help="Only Test without Training", action="store_true", )
+    parser.add_argument('-bin', "--binary",default=False , help="binary activation", action="store_true", )
+
+    # QC related
+    #parser.add_argument('-wn', "--with_norm", default=False ,help="Using Batchnorm", action="store_true", )
+
+
+
+    # File
+    parser.add_argument('-chk',"--save_chkp", help="Save checkpoints", action="store_true", )
+    parser.add_argument('-chkname', '--chk_name', default='', help='folder name for chkpoint')
+    
+    # Log
+    parser.add_argument('-deb', "--debug", help="Debug mode", action="store_true", )
+
+    args = parser.parse_args()
+    return args
 
 
 def train(epoch,interest_num,criterion,train_loader):
@@ -117,89 +137,8 @@ def test(interest_num,criterion,test_loader,debug=False):
     return float(correct) / len(test_loader.dataset)
 
 
-class ToQuantumData(object):
-    def __call__(self, tensor):
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        data = tensor.to(device)
-        input_vec = data.view(-1)
-        vec_len = input_vec.size()[0]
-        input_matrix = torch.zeros(vec_len, vec_len)
-        input_matrix[0] = input_vec
-        input_matrix = input_matrix.transpose(0, 1)
-        u, s, v = np.linalg.svd(input_matrix)
-        output_matrix = torch.tensor(np.dot(u, v))
-        # print(output_matrix)
-        output_data = output_matrix[:, 0].view(1, img_size, img_size)
-        return output_data
 
 
-
-def load_data(interest_num,datapath,isppd,img_size):
-
-    if isppd:
-        train_data = SelfMNIST(root=datapath,img_size=img_size, train=True)
-        test_data = SelfMNIST(root=datapath, img_size=img_size, train=False)
-
-    else:
-        # convert data to torch.FloatTensor
-        transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
-
-        transform_inference = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor(), ToQuantumData()])
-
-        # choose the training and test datasets
-        train_data = datasets.MNIST(root=datapath, train=True,
-                                    download=True, transform=transform)
-        test_data = datasets.MNIST(root=datapath, train=False,
-                                   download=True, transform=transform_inference)
-
-    train_data = select_num(train_data, interest_num)
-    test_data = select_num(test_data, interest_num)
-
-
-    # prepare data loaders
-    train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,
-                                               num_workers=num_workers, shuffle=True, drop_last=True)
-    test_loader = torch.utils.data.DataLoader(test_data, batch_size=inference_batch_size,
-                                              num_workers=num_workers, shuffle=True, drop_last=True)
-
-    return train_loader,test_loader
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='QuantumFlow Classification Training')
-
-    # ML related
-    parser.add_argument('--device', default='cpu', help='device')
-    parser.add_argument('-c','--interest_class',default="3,6",help="investigate classes",)
-    parser.add_argument('-s','--img_size', default="4", help="image size 4: 4*4", )
-    parser.add_argument('-dp', '--datapath', default='../../pytorch/data', help='dataset')
-    parser.add_argument('-ppd', "--preprocessdata", help="Using the preprocessed data", action="store_true", )
-    parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
-    parser.add_argument('-tb','--batch_size', default="128", help="training batch size", )
-    parser.add_argument('-ib','--inference_batch_size', default="256", help="inference batch size", )
-    parser.add_argument('-nn','--neural_in_layers', default="u:6, v:64, p:5", help="PNN structrue", )
-    parser.add_argument('-l','--init_lr', default="0.01", help="PNN learning rate", )
-    parser.add_argument('-m','--milestones', default="3, 7, 9", help="Training milestone", )
-    parser.add_argument('-e','--max_epoch', default="10", help="Training epoch", )
-    parser.add_argument('-r','--resume_path', default='', help='resume from checkpoint')
-    parser.add_argument('-t',"--test_only", help="Only Test without Training", action="store_true", )
-    parser.add_argument('-bin', "--binary",default=False , help="binary activation", action="store_true", )
-
-
-
-    # QC related
-    parser.add_argument('-wn', "--with_norm", default=False ,help="Using Batchnorm", action="store_true", )
-
-
-
-    # File
-    parser.add_argument('-chk',"--save_chkp", help="Save checkpoints", action="store_true", )
-    parser.add_argument('-chkname', '--chk_name', default='', help='folder name for chkpoint')
-    
-    # Log
-    parser.add_argument('-deb', "--debug", help="Debug mode", action="store_true", )
-
-    args = parser.parse_args()
-    return args
 
 if __name__ == "__main__":
     print("=" * 100)
@@ -221,6 +160,7 @@ if __name__ == "__main__":
     batch_size = int(args.batch_size)
     inference_batch_size = int(args.inference_batch_size)
     layers =[]
+
     for item1 in args.neural_in_layers.split(","):
         x= item1.split(":")
         layer =[]
@@ -237,7 +177,7 @@ if __name__ == "__main__":
     training = not(args.test_only)
     binary = args.binary
     debug = args.debug
-    with_norm = args.with_norm
+    # with_norm = args.with_norm
 
     save_chkp = args.save_chkp
     if save_chkp:
@@ -269,9 +209,9 @@ if __name__ == "__main__":
 
     # Schedule train and test
 
-    train_loader, test_loader = load_data(interest_class,datapath,isppd,img_size)
+    train_loader, test_loader = load_data(interest_class,datapath,isppd,img_size,batch_size,inference_batch_size,num_workers)
     criterion = nn.CrossEntropyLoss()
-    model = Net(img_size,layers,with_norm,training,binary,debug)
+    model = Net(img_size,layers,training,binary,debug)
     model = model.to(device)
 
     print(device)
