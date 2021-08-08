@@ -19,6 +19,8 @@ import qiskit
 import math
 from qiskit import BasicAer
 from qiskit.quantum_info import state_fidelity
+import copy
+
 ################ Weiwen on 12-30-2020 ################
 # Function: fire_ibmq from Listing 6
 # Note: used for execute quantum circuit using 
@@ -36,16 +38,21 @@ def fire_ibmq(circuit,shots,Simulation = True,backend_name='ibmq_essex'):
         backend = Aer.get_backend('qasm_simulator')
     # circuit.save_statevector()
     job_ibm_q = execute(circuit, backend, shots=shots)
-
-    # job_monitor(job_ibm_q)
+    if not Simulation:
+        job_monitor(job_ibm_q)
     result_ibm_q = job_ibm_q.result()
 
     counts = result_ibm_q.get_counts()
     return counts
 
 
-def get_state(circuit):   
-    backend = BasicAer.get_backend('unitary_simulator') 
+def get_state(circuit,IBMQ=None):   
+    if IBMQ == None:
+        backend = BasicAer.get_backend('unitary_simulator') 
+    else:
+        provider = IBMQ.get_provider(hub='ibm-q', group='open', project='main')
+        backend = provider.backend.ibmq_vigo
+              
     job = backend.run(transpile(circuit, backend))
     
     state = job.result().get_unitary(circuit, decimals=9) # Execute the circuit
@@ -176,7 +183,7 @@ class ExtendGate():
             if state[idx]=='0':
                 circ.x(qubits[idx])
 
-class ULayerCircuit():
+class ULayerCircuit(object):
 ################ Weiwen on 06-02-2021 ################
 # QuantumFlow Weight Generation for U-Layer
 ######################################################
@@ -563,3 +570,88 @@ class VQuantumCircuit():
             for i in range(self.class_num):
                 self.vqc_5(circuit,input_qubits[i],thetas)
 
+class FFNNCircuit(ULayerCircuit):
+
+    def __init__(self,input_num,output_num):
+        self.n_qubit = int (math.log2(input_num))
+        self.n_class = output_num
+        if self.n_qubit > 4:
+            print('FFNNCircuit: The input size is too big. Qubits should be less than 4.')
+            sys.exit(0)
+
+    @classmethod
+    def AinB(self,A,B):
+        idx_a = []
+        for i in range(len(A)):
+            if A[i]=="1":
+                idx_a.append(i)    
+        flag = True
+        for j in idx_a:
+            if B[j]=="0":
+                flag=False
+                break
+        return flag
+
+    @classmethod
+    def FFNN_Create_Weight(self,weights):        
+        # Find Z control gates according to weights
+        w = (weights.detach().cpu().numpy())
+        total_len = len(w)            
+        digits = int(math.log(total_len,2))
+        flag = "0"+str(digits)+"b"
+        max_num = int(math.pow(2,digits))
+        sign = {}
+        for i in range(max_num):        
+            sign[format(i,flag)] = +1    
+        sign_expect = {}
+        for i in range(max_num):
+            sign_expect[format(i,flag)] = int(w[i])    
+        
+        order_list = []
+        for i in range(digits+1):
+            for key in sign.keys():
+                if key.count("1") == i:
+                    order_list.append(key)    
+        
+        gates = []    
+        sign_cur = copy.deepcopy(sign_expect)
+        for idx in range(len(order_list)):
+            key = order_list[idx]
+            if sign_cur[key] == -1:
+                gates.append(key)
+                for cor_idx in range(idx,len((order_list))):
+                    if self.AinB(key,order_list[cor_idx]):
+                        sign_cur[order_list[cor_idx]] = (-1)*sign_cur[order_list[cor_idx]]    
+        return gates
+    
+    def forward(self,circuit,weight,in_qubits,out_qubit, aux = []):
+        for i in range(self.n_class):
+            n_q_gates = self.FFNN_Create_Weight(weight[i])
+            qbits = in_qubits[i]
+            for gate in n_q_gates:
+                z_count = gate.count("1")
+                # z_pos = get_index_list(gate,"1")
+                z_pos = self.get_index_list(gate[::-1],"1")
+                if z_count==1:
+                    circuit.z(qbits[z_pos[0]])
+                elif z_count==2:
+                    circuit.cz(qbits[z_pos[0]],qbits[z_pos[1]])
+                elif z_count==3:
+                    ExtendGate.ccz(circuit,qbits[z_pos[0]],qbits[z_pos[1]],qbits[z_pos[2]],aux[0])
+                elif z_count==4:
+                    ExtendGate.cccz(circuit,qbits[z_pos[0]],qbits[z_pos[1]],qbits[z_pos[2]],qbits[z_pos[3]],aux[0],aux[1])
+        circuit.barrier()
+        for i in range(self.n_class):
+            circuit.h(in_qubits[i])
+            circuit.x(in_qubits[i])
+        circuit.barrier()
+        for i in range(self.n_class):
+            qbits = in_qubits[i]
+            if self.n_qubit==1:
+                circuit.cx(qbits[0],qbits[1],out_qubit[i])
+            elif self.n_qubit==2:
+                circuit.ccx(qbits[0],qbits[1],out_qubit[i])
+            elif self.n_qubit==3:
+                ExtendGate.cccx(circuit,qbits[0],qbits[1],qbits[2],out_qubit[i],aux[0])
+            elif self.n_qubit==4:
+                ExtendGate.ccccx(circuit,qbits[0],qbits[1],qbits[2],qbits[3],out_qubit[i],aux[0],aux[1])
