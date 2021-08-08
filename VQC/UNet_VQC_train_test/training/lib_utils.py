@@ -2,8 +2,8 @@
 import torch
 import os
 import sys
-from lib_bn import *
-from lib_qf import *
+from training.lib_bn import *
+from training.lib_qf import *
 import shutil
 
 

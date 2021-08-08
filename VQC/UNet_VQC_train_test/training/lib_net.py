@@ -3,10 +3,10 @@ import torch
 import sys
 import torch.nn.functional as F
 
-from lib_qf import *
-from lib_bn import *
-from lib_vqc import *
-from lib_utils import *
+from training.lib_qf import *
+from training.lib_bn import *
+from training.lib_vqc import *
+from training.lib_utils import *
 
 ## Define the NN architecture
 class Net(nn.Module):

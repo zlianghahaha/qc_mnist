@@ -1,6 +1,6 @@
-from lib_net import *
-from lib_dataloader import *
-from lib_utils import *
+from training.lib_net import *
+from training.lib_dataloader import *
+from training.lib_utils import *
 
 import argparse
 import time
@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
     parser.add_argument('-tb','--batch_size', default="64", help="training batch size", )
     parser.add_argument('-ib','--inference_batch_size', default="32", help="inference batch size", )
-    parser.add_argument('-nn','--neural_in_layers', default="u:4,p2a:16,v:16:u:3", help="QNN structrue :<layer1 name: output_number;layer2 name:output_number...>", )
+    parser.add_argument('-nn','--neural_in_layers', default="v10:16,u:2", help="QNN structrue :<layer1 name: output_number;layer2 name:output_number...>", )
 
     parser.add_argument('-l','--init_lr', default="0.1", help="PNN learning rate", )
     parser.add_argument('-m','--milestones', default="2,6, 8, 9", help="Training milestone", )
@@ -46,7 +46,7 @@ def parse_args():
 
 
     # File
-    parser.add_argument('-chk',"--save_chkp", help="Save checkpoints", action="store_true", )
+    parser.add_argument('-chk',"--save_chkp",default=True , help="Save checkpoints", action="store_true", )
     parser.add_argument('-chkname', '--chk_name', default='', help='folder name for chkpoint')
     
     # Log

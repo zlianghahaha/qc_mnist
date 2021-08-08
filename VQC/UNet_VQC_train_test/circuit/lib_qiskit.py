@@ -14,10 +14,11 @@ import functools
 from qiskit.tools.monitor import job_monitor
 from qiskit import QuantumRegister, QuantumCircuit, ClassicalRegister
 from qiskit.extensions import  UnitaryGate
-from qiskit import Aer, execute,IBMQ
+from qiskit import Aer, execute,IBMQ,assemble,transpile
 import qiskit
 import math
-
+from qiskit import BasicAer
+from qiskit.quantum_info import state_fidelity
 ################ Weiwen on 12-30-2020 ################
 # Function: fire_ibmq from Listing 6
 # Note: used for execute quantum circuit using 
@@ -33,6 +34,7 @@ def fire_ibmq(circuit,shots,Simulation = True,backend_name='ibmq_essex'):
         backend = provider.get_backend(backend_name)
     else:
         backend = Aer.get_backend('qasm_simulator')
+    # circuit.save_statevector()
     job_ibm_q = execute(circuit, backend, shots=shots)
 
     # job_monitor(job_ibm_q)
@@ -40,6 +42,14 @@ def fire_ibmq(circuit,shots,Simulation = True,backend_name='ibmq_essex'):
 
     counts = result_ibm_q.get_counts()
     return counts
+
+
+def get_state(circuit):   
+    backend = BasicAer.get_backend('unitary_simulator') 
+    job = backend.run(transpile(circuit, backend))
+    
+    state = job.result().get_unitary(circuit, decimals=9) # Execute the circuit
+    return state
 
 
 ################ Weiwen on 12-30-2020 ################
@@ -200,10 +210,11 @@ class ULayerCircuit():
         circuit.add_register(out_qubits)
         return out_qubits
 
-    def forward(self,circuit,data_matrix,weight,in_qubits,out_qubit,aux = []):
+    def forward(self,circuit,weight,in_qubits,out_qubit, data_matrix = None,aux = []):
         for i in range(self.n_class):
             n_q_gates,n_idx = self.qf_map_extract_from_weight(weight[i])
-            circuit.append(UnitaryGate(data_matrix[n_idx], label="Input"), in_qubits[i][0:self.n_qubit])
+            if data_matrix != None:
+                circuit.append(UnitaryGate(data_matrix[n_idx], label="Input"), in_qubits[i][0:self.n_qubit])
             qbits = in_qubits[i]
             for gate in n_q_gates:
                 z_count = gate.count("1")
@@ -452,4 +463,103 @@ class NormerlizeCircuit():
                 circuit.ccx(input_qubits[i],norm_qubits[i],out_qubits[i])
             else:
                 circuit.ccx(input_qubits[i],norm_qubits[i],out_qubits[i])
+
+class UMatrixCircuit():    
+    def __init__(self, input_num,class_num):
+        # --- parameter definition ---
+        #self._circuit = circuit
+        self.n_qubit = int(math.log2(input_num))
+        self.class_num = class_num
+
+
+
+    def add_input_qubits(self,circuit):
+        inps = []
+        for i in range(self.class_num):
+            inp = QuantumRegister(self.n_qubit,"in"+str(i)+"_qbit")
+            circuit.add_register(inp)
+            inps.append(inp)
+        return inps
+
+    def forward(self,circuit,input_qubits,data_matrix,ids = None):
+        for i in range(self.class_num):
+            if ids == None:
+                circuit.append(UnitaryGate(data_matrix, label="Input"), input_qubits[i][0:self.n_qubit])
+            else:
+                circuit.append(UnitaryGate(data_matrix[ids[i]], label="Input"), input_qubits[i][0:self.n_qubit])
+
+
+class VQuantumCircuit():    
+    def __init__(self, n_qubits,class_num):
+        # --- parameter definition ---
+        #self._circuit = circuit
+        self.n_qubits = n_qubits
+        self.class_num = class_num
+
+
+
+    def add_input_qubits(self,circuit):
+        inps = []
+        for i in range(self.n_class):
+            inp = QuantumRegister(self.n_qubit,"in"+str(i)+"_qbit")
+            circuit.add_register(inp)
+            inps.append(inp)
+        return inps
+
+
+
+    #define the circuit
+    def vqc_10(self,circuit,input_qubits,thetas):
+        # print(input_qubits)
+        #head ry part 
+        for i in range(0,self.n_qubits):
+            circuit.ry(thetas[i], input_qubits[i])
+        circuit.barrier(input_qubits)
+        
+        #cz part
+        for i in range(self.n_qubits-1):
+            circuit.cz(input_qubits[self.n_qubits-2-i],input_qubits[self.n_qubits-1-i])
+        circuit.cz(input_qubits[0],input_qubits[self.n_qubits-1])
+        circuit.barrier(input_qubits)
+
+        #tail ry part
+        for i in range(0,self.n_qubits):
+            circuit.ry(thetas[i+self.n_qubits], input_qubits[i])
+
+
+    def vqc_5(self,circuit,input_qubits,thetas):
+        for i in range(0,self.n_qubits):
+            circuit.rx(thetas[i],input_qubits[i])
+        for i in range(0,self.n_qubits):
+            circuit.rz(thetas[self.n_qubits+i],input_qubits[i])
+        
+        circuit.barrier(input_qubits)
+        cnt = 0
+        for i in range(self.n_qubits-1,-1,-1):
+            for j in range(self.n_qubits-1,-1,-1):
+                if j == i:
+                    continue
+                else:
+                    circuit.crz(thetas[2*self.n_qubits + cnt],input_qubits[i],input_qubits[j])
+                    cnt = cnt +1
+            circuit.barrier(input_qubits)
+        for i in range(0,self.n_qubits):
+            circuit.rx(thetas[5*self.n_qubits+i],input_qubits[i])
+        for i in range(0,self.n_qubits):
+            circuit.rz(thetas[6*self.n_qubits+i],input_qubits[i])
+
+    def get_parameter_number(self,vqc_name):
+        if vqc_name == 'v10':
+            return int(2*self.n_qubits)
+        elif vqc_name == 'v5':
+            return int(7*self.n_qubits)
+
+    
+    def forward(self,circuit,input_qubits,vqc_name,thetas):
+        if vqc_name == 'v10':
+            for i in range(self.class_num):
+                self.vqc_10(circuit,input_qubits[i],thetas)
+        elif vqc_name == 'v5':
+            for i in range(self.class_num):
+                self.vqc_5(circuit,input_qubits[i],thetas)
 

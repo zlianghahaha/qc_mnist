@@ -4,7 +4,7 @@ import torch.nn as nn
 from torch.nn.parameter import Parameter
 import numpy as np
 import sys
-from lib_utils import *
+from training.lib_utils import *
 
 ################ zhirui on 12-30-2020 ################
 # this block is for buding the matrix of variant circuit
