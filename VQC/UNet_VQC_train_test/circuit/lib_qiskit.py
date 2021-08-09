@@ -43,6 +43,7 @@ def fire_ibmq(circuit,shots,Simulation = True,backend_name='ibmq_essex'):
     result_ibm_q = job_ibm_q.result()
 
     counts = result_ibm_q.get_counts()
+    
     return counts
 
 
@@ -207,7 +208,7 @@ class ULayerCircuit(object):
     def add_in_qubits(self,circuit):
         inps = []
         for i in range(self.n_class):
-            inp = QuantumRegister(self.n_qubit,"in"+str(i)+"_qbit")
+            inp = QuantumRegister(self.n_qubit,"inu"+str(i)+"_qbit")
             circuit.add_register(inp)
             inps.append(inp)
         return inps
@@ -507,8 +508,8 @@ class VQuantumCircuit():
 
     def add_input_qubits(self,circuit):
         inps = []
-        for i in range(self.n_class):
-            inp = QuantumRegister(self.n_qubit,"in"+str(i)+"_qbit")
+        for i in range(self.class_num):
+            inp = QuantumRegister(self.n_qubits,"inv"+str(i)+"_qbit")
             circuit.add_register(inp)
             inps.append(inp)
         return inps
