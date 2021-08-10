@@ -2,8 +2,8 @@
 import torch
 import os
 import sys
-from training.lib_bn import *
-from training.lib_qf import *
+from lib_bn import *
+from lib_qf import *
 import shutil
 
 
@@ -37,6 +37,7 @@ def tensor_sqrt(x):
     return torch.sqrt(x+1e-6)
 
 def amp2prop(state):
+    state = state.double()
     n_qubits = int(math.log2(state.shape[0]))
     sum_mat = torch.tensor(qf_sum(n_qubits),dtype=torch.float64)
     sum_mat = sum_mat.t()

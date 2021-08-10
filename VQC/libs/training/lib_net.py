@@ -3,10 +3,10 @@ import torch
 import sys
 import torch.nn.functional as F
 
-from training.lib_qf import *
-from training.lib_bn import *
-from training.lib_vqc import *
-from training.lib_utils import *
+from lib_qf import *
+from lib_bn import *
+from lib_vqc import *
+from lib_utils import *
 
 ## Define the NN architecture
 class Net(nn.Module):
@@ -38,6 +38,8 @@ class Net(nn.Module):
                 setattr(self, fc_name, VQC_Net(loop_in_size, layers[idx][1]))
             elif layers[idx][0]=='v10':
                 setattr(self, fc_name, VQC_Net(loop_in_size, layers[idx][1],'vqc_10'))
+            elif layers[idx][0]=='v5':
+                setattr(self, fc_name, VQC_Net(loop_in_size, layers[idx][1],'vqc_5'))
             elif layers[idx][0]=='n':
                 setattr(self, fc_name, QC_Norm_Correction_try2(num_features=layers[idx][1]))
             else:
