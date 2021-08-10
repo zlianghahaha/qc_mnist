@@ -1,6 +1,6 @@
-from training.lib_net import *
-from training.lib_dataloader import *
-from training.lib_utils import *
+from lib_net import *
+from lib_dataloader import *
+from lib_utils import *
 
 import argparse
 import time
@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument('-dp', '--datapath', default='/home/hzr/Software/quantum/qc_mnist/pytorch/data', help='dataset')
     parser.add_argument('-ppd', "--preprocessdata", help="Using the preprocessed data", action="store_true", )
     parser.add_argument('-j','--num_workers', default="0", help="worker to load data", )
-    parser.add_argument('-tb','--batch_size', default="64", help="training batch size", )
+    parser.add_argument('-tb','--batch_size', default="128", help="training batch size", )
     parser.add_argument('-ib','--inference_batch_size', default="32", help="inference batch size", )
     parser.add_argument('-nn','--neural_in_layers', default="u:4,p2a:16,v10:2", help="QNN structrue :<layer1 name: output_number;layer2 name:output_number...>", )
 
@@ -48,6 +48,7 @@ def parse_args():
     # File
     parser.add_argument('-chk',"--save_chkp",default=True , help="Save checkpoints", action="store_true", )
     parser.add_argument('-chkname', '--chk_name', default='', help='folder name for chkpoint')
+    parser.add_argument('-chkpath', '--chk_path', default='.', help='Root folder for chkpoint')
     
     # Log
     parser.add_argument('-deb', "--debug", help="Debug mode", action="store_true", )
@@ -152,6 +153,7 @@ if __name__ == "__main__":
     args = parse_args()
 
     datapath = args.datapath
+    chkpath = args.chk_path
     isppd = args.preprocessdata
     device = args.device
     interest_class = [int(x.strip()) for x in args.interest_class.split(",")]
@@ -182,9 +184,9 @@ if __name__ == "__main__":
     save_chkp = args.save_chkp
     if save_chkp:
         if args.chk_name!="":
-            save_path = "./model/" + args.chk_name
+            save_path = chkpath + "/model/" + args.chk_name
         else:
-            save_path = "./model/" + os.path.basename(sys.argv[0]) + "_" + time.strftime("%Y_%m_%d-%H_%M_%S")
+            save_path = chkpath + "/model/" + os.path.basename(sys.argv[0]) + "_" + time.strftime("%Y_%m_%d-%H_%M_%S")
         Path(save_path).mkdir(parents=True, exist_ok=True)
 
         logger.info("Checkpoint path: {}".format(save_path))
