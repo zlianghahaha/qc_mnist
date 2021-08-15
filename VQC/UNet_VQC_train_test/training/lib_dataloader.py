@@ -2,7 +2,7 @@ import torch
 import torchvision.transforms as transforms
 from torchvision import datasets
 import numpy as np
-from training.SelfMNIST import *
+from SelfMNIST import *
 
 def modify_target_ori(target,interest_num):
     for j in range(len(target)):
