@@ -28,9 +28,9 @@ class LinnerCircuit(BaseCircuit):
         
     
     def add_aux(self,circuit):
-        if self.n_qubits <= 3:
+        if self.n_qubits < 3:
             aux = self.add_qubits(circuit,"aux_qbit",1)
-        elif self.n_qubits == 4:
+        elif self.n_qubits >= 3:
             aux = self.add_qubits(circuit,"aux_qbit",2)
         return aux
 
@@ -46,7 +46,7 @@ class LinnerCircuit(BaseCircuit):
     def extract_from_weight(weight):
         pass
 
-    def forward(self,circuit,weight,in_qubits,out_qubit, data_matrix = None,aux = []):
+    def add_weight(self,circuit,weight,in_qubits, data_matrix = None,aux = []):
         for i in range(self.n_repeats):
             n_q_gates,n_idx = self.extract_from_weight(weight[i])
             if data_matrix != None and n_idx != None:
@@ -65,6 +65,8 @@ class LinnerCircuit(BaseCircuit):
                 elif z_count==4:
                     ExtendGate.cccz(circuit,qbits[z_pos[0]],qbits[z_pos[1]],qbits[z_pos[2]],qbits[z_pos[3]],aux[0],aux[1])
         circuit.barrier()
+    
+    def sum2(self,circuit,in_qubits,out_qubit,aux = []):
         for i in range(self.n_repeats):
             circuit.h(in_qubits[i])
             circuit.x(in_qubits[i])
@@ -76,9 +78,14 @@ class LinnerCircuit(BaseCircuit):
             elif self.n_qubits==2:
                 circuit.ccx(qbits[0],qbits[1],out_qubit[i])
             elif self.n_qubits==3:
-                ExtendGate.cccx(circuit,qbits[0],qbits[1],qbits[2],out_qubit[i],aux[0])
+                ExtendGate.cccx(circuit,qbits[0],qbits[1],qbits[2],out_qubit[i],aux[0],aux[1])
             elif self.n_qubits==4:
                 ExtendGate.ccccx(circuit,qbits[0],qbits[1],qbits[2],qbits[3],out_qubit[i],aux[0],aux[1])
+
+    def forward(self,circuit,weight,in_qubits,out_qubit, data_matrix = None,aux = []):
+        self.add_weight(circuit,weight,in_qubits,data_matrix ,aux)
+        self.sum2(circuit,in_qubits,out_qubit,aux)
+
 
 
     @classmethod
